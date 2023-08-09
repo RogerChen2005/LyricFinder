@@ -49,7 +49,6 @@
         </el-col>
         <el-col :span="2" style="overflow:visible;">
           <el-button type="primary" v-on:click="select_folder">选择文件夹</el-button>
-          <input type="file" @change="selectFolder($event)" webkitdirectory />
         </el-col>
       </el-row>
     </div>
@@ -77,15 +76,6 @@ export default {
     }
   },
   methods: {
-    selectFolder(e) {
-      console.log(1);
-      var files = e.target.files;
-      console.log(files);
-    },
-    async select_folder(){
-      const dirhandle= await window.showDirectoryPicker();
-      console.log(file);
-    }
   }
 }
 </script>
