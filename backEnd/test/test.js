@@ -1,4 +1,4 @@
-const {search,song_detail,song_url_v1,login_qr_key,login_qr_create,user_account,user_playlist,playlist_track_all} = require("../api")
+const {search,lyric,song_detail,song_url_v1,login_qr_key,login_qr_create,user_account,user_playlist,playlist_track_all} = require("../api")
 const fs = require("fs");
 const path = require("path");
 
@@ -59,6 +59,13 @@ async function get_list_song(query){
     fs.writeFileSync(path.join(__dirname,"result.json"),JSON.stringify(result));
 }
 
-get_song_detail({
-    id:'1984821452'
+async function get_lyric(query){
+    let result = await lyric({
+        id: query.id
+    })
+    fs.writeFileSync(path.join(__dirname,"result.json"),JSON.stringify(result));
+}
+
+get_lyric({
+    id:'1302261241'
 })

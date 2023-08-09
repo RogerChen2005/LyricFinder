@@ -1,165 +1,41 @@
 {
     "status": 200,
     "body": {
-        "songs": [
-            {
-                "name": "让",
-                "id": 1984821452,
-                "pst": 0,
-                "t": 0,
-                "ar": [
-                    {
-                        "id": 12063092,
-                        "name": "邹念慈",
-                        "tns": [],
-                        "alias": []
-                    }
-                ],
-                "alia": [],
-                "pop": 100,
-                "st": 0,
-                "rt": "",
-                "fee": 8,
-                "v": 4,
-                "crbt": null,
-                "cf": "",
-                "al": {
-                    "id": 152293013,
-                    "name": "让",
-                    "picUrl": "https://p2.music.126.net/wqMU7GnMF_4ktNgRyw_Lxg==/109951167912701796.jpg",
-                    "tns": [],
-                    "pic_str": "109951167912701796",
-                    "pic": 109951167912701800
-                },
-                "dt": 180981,
-                "h": {
-                    "br": 320000,
-                    "fid": 0,
-                    "size": 7241325,
-                    "vd": -45484,
-                    "sr": 48000
-                },
-                "m": {
-                    "br": 192000,
-                    "fid": 0,
-                    "size": 4344813,
-                    "vd": -42850,
-                    "sr": 48000
-                },
-                "l": {
-                    "br": 128000,
-                    "fid": 0,
-                    "size": 2896557,
-                    "vd": -41167,
-                    "sr": 48000
-                },
-                "sq": {
-                    "br": 893870,
-                    "fid": 0,
-                    "size": 20221741,
-                    "vd": -45453,
-                    "sr": 48000
-                },
-                "hr": {
-                    "br": 1663360,
-                    "fid": 0,
-                    "size": 37629652,
-                    "vd": -45453,
-                    "sr": 48000
-                },
-                "a": null,
-                "cd": "01",
-                "no": 1,
-                "rtUrl": null,
-                "ftype": 0,
-                "rtUrls": [],
-                "djId": 0,
-                "copyright": 0,
-                "s_id": 0,
-                "mark": 536879104,
-                "originCoverType": 1,
-                "originSongSimpleData": null,
-                "tagPicList": null,
-                "resourceState": true,
-                "version": 4,
-                "songJumpInfo": null,
-                "entertainmentTags": null,
-                "awardTags": null,
-                "single": 0,
-                "noCopyrightRcmd": null,
-                "mst": 9,
-                "cp": 0,
-                "rtype": 0,
-                "rurl": null,
-                "mv": 0,
-                "publishTime": 0
-            }
-        ],
-        "privileges": [
-            {
-                "id": 1984821452,
-                "fee": 8,
-                "payed": 0,
-                "st": 0,
-                "pl": 128000,
-                "dl": 0,
-                "sp": 7,
-                "cp": 1,
-                "subp": 1,
-                "cs": false,
-                "maxbr": 999000,
-                "fl": 128000,
-                "toast": false,
-                "flag": 4,
-                "preSell": false,
-                "playMaxbr": 999000,
-                "downloadMaxbr": 999000,
-                "maxBrLevel": "hires",
-                "playMaxBrLevel": "hires",
-                "downloadMaxBrLevel": "hires",
-                "plLevel": "standard",
-                "dlLevel": "none",
-                "flLevel": "standard",
-                "rscl": null,
-                "freeTrialPrivilege": {
-                    "resConsumable": false,
-                    "userConsumable": false,
-                    "listenType": null
-                },
-                "chargeInfoList": [
-                    {
-                        "rate": 128000,
-                        "chargeUrl": null,
-                        "chargeMessage": null,
-                        "chargeType": 0
-                    },
-                    {
-                        "rate": 192000,
-                        "chargeUrl": null,
-                        "chargeMessage": null,
-                        "chargeType": 1
-                    },
-                    {
-                        "rate": 320000,
-                        "chargeUrl": null,
-                        "chargeMessage": null,
-                        "chargeType": 1
-                    },
-                    {
-                        "rate": 999000,
-                        "chargeUrl": null,
-                        "chargeMessage": null,
-                        "chargeType": 1
-                    },
-                    {
-                        "rate": 1999000,
-                        "chargeUrl": null,
-                        "chargeMessage": null,
-                        "chargeType": 1
-                    }
-                ]
-            }
-        ],
+        "sgc": false,
+        "sfy": false,
+        "qfy": false,
+        "transUser": {
+            "id": 29559821,
+            "status": 99,
+            "demand": 1,
+            "userid": 1726679859,
+            "nickname": "芭芭拉会魔法",
+            "uptime": 1658212337222
+        },
+        "lyricUser": {
+            "id": 4628578,
+            "status": 99,
+            "demand": 0,
+            "userid": 48614773,
+            "nickname": "柠檬味海风Sound",
+            "uptime": 1548912617935
+        },
+        "lrc": {
+            "version": 9,
+            "lyric": "[00:45.679]Bend a shoulder to your lover\n[00:49.142]Sinking slow in the August heat\n[00:52.900]I am older, half my mother\n[00:56.524]But God this time just carries me\n[01:00.220]Could you hold her, could you love her\n[01:04.068]As you did in humidity\n[01:07.654]Since the winter you've gone colder\n[01:11.508]Purple hands and purple feet\n[01:13.796]\n[01:20.277]It's comical and bright\n[01:27.254]How your head's on right ways\n[01:34.804]Just calico inside\n[01:42.044]With the head on sideways\n[01:44.461]\n[01:46.612]Undress my body before I go\n[01:53.868]Soon babies thighs go indigo\n[02:01.340]Hold your index at my waistline\n[02:04.868]Where you won such a careful love\n[02:08.413]We are only half our mothers\n[02:12.348]Look how this time just ruins us\n[02:14.901]\n[02:20.932]It's comical and bright\n[02:27.972]How your head's on right ways\n[02:35.644]Just calico inside\n[02:42.972]With the head on sideways\n[02:45.268]\n[02:52.636]Calendar lover you tire so quick\n[02:58.885]If you'd say it out loud, well I could lose in my fist\n[03:06.095]But I'm only a sweetheart when you see it fit\n[03:14.748]I'll say\n[03:17.476]\n[03:23.956]I'm comical and bright\n[03:30.956]With your hands on my waist\n[03:38.420]I'm calico inside\n[03:45.604]With my head on sideways\n"
+        },
+        "klyric": {
+            "version": 0,
+            "lyric": ""
+        },
+        "tlyric": {
+            "version": 6,
+            "lyric": "[by:散夫俗子]\n[00:45.679]弯下肩膀 倾向你的爱人\n[00:49.142]在八月的燥热中  缓缓沉沦\n[00:52.900]人老珠黄 桑之落矣\n[00:56.524]但这一次 上天也眷顾（拥护）我\n[01:00.220]你能抱着她吗？你能爱她吗？\n[01:04.068]一如你曾拨云撩雨，云雨巫山\n[01:07.654]冬天以来 你也愈发淡漠（冷落）\n[01:11.508]而我金玉在外 败絮其中\n[01:13.796]\n[01:20.277]啼笑皆非啊 亦灿若繁星\n[01:27.254]你怎会如此清醒\n[01:34.804]心心念念着的 印花布啊\n[01:42.044]辗转反侧 难以忘怀\n[01:44.461]\n[01:46.612]离别之前 为我宽衣吧\n[01:53.868]风花雪月 雨意云情\n[02:01.340]搂着我 抚摸我\n[02:04.868]你将得到我全部的爱（赢得一场细腻的爱）\n[02:08.413]我们年轻 岁月正好\n[02:12.348]且看时光如何拆散（毁灭）我们\n[02:14.901]\n[02:20.932]啼笑皆非啊 亦灿若繁星\n[02:27.972]你怎会如此清醒\n[02:35.644]心心念念着的 印花布啊\n[02:42.972]辗转反侧 难以忘怀\n[02:45.268]\n[02:52.636]流水的爱人 你对我早已腻烦了吧？\n[02:58.885]但如果你把这大声地说出来 我将难以自持（迷失于我的拳头）\n[03:06.095]但在你觉得合适的时候 我还是会成为你唯一的情人\n[03:14.748]我想说啊\n[03:17.476]\n[03:23.956]在你紧紧搂着我的时候\n[03:30.956]我是如此可笑 也如此闪耀\n[03:38.420]我内心纯如印花布\n[03:45.604]我侧卧难眠\n"
+        },
+        "romalrc": {
+            "version": 0,
+            "lyric": ""
+        },
         "code": 200
     },
     "cookie": []

@@ -5,9 +5,9 @@
         </el-header>
         <el-main>
             <el-table :data="list" style="height:100%;width: 100%">
-                <el-table-column prop="title" label="名称"/>
-                <el-table-column prop="artists" label="歌手"/>
-                <el-table-column prop="album" label="专辑"/>
+                <el-table-column prop="title" label="名称" />
+                <el-table-column prop="artists" label="歌手" />
+                <el-table-column prop="album" label="专辑" />
                 <el-table-column fixed="right" label="操作" width="500">
                     <template #default="scope">
                         <div style="display: flex;flex-direction: row;">
@@ -20,32 +20,103 @@
         </el-main>
         <el-footer>
             <el-button type="primary" v-on:click="songlist_save" style="margin-right: 20px;">保存</el-button>
-            <el-checkbox v-model="d_song">歌曲</el-checkbox>
-            <el-select multiple v-model="bitrate" placeholder="请选择音质" style="margin-right: 20px;">
-                <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
+            <el-checkbox v-model="song">歌曲</el-checkbox>
+            <el-select v-model="bitrate" placeholder="请选择音质" style="margin-right: 20px;">
+                <el-option v-for="item in quality" :key="item.value" :label="item.label" :value="item.value">
+                    <span style="float: left">{{ item.label }}</span>
+                    <div v-if="item.vip">
+                        <img style="margin-left: 10px;height: 12px" :src="require('@/assets/vip.png')">
+                    </div>
                 </el-option>
             </el-select>
-            <el-checkbox v-model="d_lyric">歌词</el-checkbox>
-            <el-checkbox v-model="d_cover">封面</el-checkbox>
+            <el-checkbox v-model="lyric">歌词</el-checkbox>
+            <el-checkbox v-model="cover">封面</el-checkbox>
             <el-button v-on:click="download" type="primary" style="margin-left: 20px;">下载</el-button>
         </el-footer>
     </el-container>
 </template>
 
 <script>
+import axios from 'axios';
+import { ElNotification } from 'element-plus'
+
 export default {
     name: 'DownloadPage',
     props: {
-        queue:Array
+        queue: Array
     },
     data() {
         return {
-            list:this.queue
+            list: this.queue,
+            quality: [
+                {
+                    label: "标准",
+                    value: "standard",
+                    vip: false
+                },
+                {
+                    label: "极高",
+                    value: "exhigh",
+                    vip: true
+                },
+                {
+                    label: "无损",
+                    value: "lossless",
+                    vip: true
+                },
+                {
+                    label: "Hi-Res",
+                    value: "hires",
+                    vip: true
+                },
+                {
+                    label: "高清环绕声",
+                    value: "jyeffect",
+                    vip: true
+                },
+                {
+                    label: "沉浸环绕声",
+                    value: "sky",
+                    vip: true
+                },
+                {
+                    label: "超清母带",
+                    value: "jymaster",
+                    vip: true
+                },
+            ],
+            bitrate: "lossless",
+            song: true,
+            lyric: true,
+            cover: false
         }
     },
     methods: {
-        remove_row(index){
-            this.list.splice(index,1);
+        remove_row(index) {
+            this.list.splice(index, 1);
+        },
+        download() {
+            axios.post("http://localhost:3030/func", {
+                target: "download",
+                data: {
+                    queue: this.queue,
+                    options: {
+                        song: this.song,
+                        lyric: this.lyric,
+                        cover: this.cover,
+                        classify: true,
+                        mode: 0,
+                        path: ""
+                    }
+                }
+            }).then((res) => {
+                console.log(res);
+                ElNotification({
+                    title: '提示',
+                    message: '下载已经开始',
+                    type: 'info',
+                });
+            })
         }
     },
 }

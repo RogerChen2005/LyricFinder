@@ -1,4 +1,5 @@
 const { search, song_url_v1, song_detail, login_qr_key, login_qr_create, login_qr_check, user_account, user_playlist, playlist_track_all } = require("./api.js")
+const {download} = require('./download.js')
 
 async function search_query(query) {
     let data = [];
@@ -132,6 +133,11 @@ async function get_list_song(query) {
     return JSON.stringify({
         songs: data
     })
+}
+
+async function download_query(query){
+    download(query.queue,query.options);
+    return "{}";
 }
 
 module.exports = {

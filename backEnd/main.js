@@ -14,11 +14,19 @@ wss.on('connection', (socket) => {
   socket.on('message', (data) => { onMessage(socket, data) });
 });
 
+function send(target,message){
+  wss.clients.forEach((socket)=>{
+    socket.send(JSON.stringify({
+      target:target,
+      message:message
+    }))
+  })
+}
+
 async function onMessage(socket, command) {
   let cmd = JSON.parse(command);
   let func;
   if (cmd.target) {
-    // func = eval("functions."+cmd.target);
     func = functions[cmd.target];
   }
   socket.send(await func(cmd.data));

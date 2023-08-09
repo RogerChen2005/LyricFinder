@@ -87,6 +87,7 @@ export default {
             ).then(
                 (response) => {
                     if (typeof callback === 'function') {
+                        callback(response.data);
                         this.search_loading = false;
                     }
                 }
