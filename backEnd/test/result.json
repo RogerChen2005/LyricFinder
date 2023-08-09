@@ -1,0 +1,166 @@
+{
+    "status": 200,
+    "body": {
+        "songs": [
+            {
+                "name": "让",
+                "id": 1984821452,
+                "pst": 0,
+                "t": 0,
+                "ar": [
+                    {
+                        "id": 12063092,
+                        "name": "邹念慈",
+                        "tns": [],
+                        "alias": []
+                    }
+                ],
+                "alia": [],
+                "pop": 100,
+                "st": 0,
+                "rt": "",
+                "fee": 8,
+                "v": 4,
+                "crbt": null,
+                "cf": "",
+                "al": {
+                    "id": 152293013,
+                    "name": "让",
+                    "picUrl": "https://p2.music.126.net/wqMU7GnMF_4ktNgRyw_Lxg==/109951167912701796.jpg",
+                    "tns": [],
+                    "pic_str": "109951167912701796",
+                    "pic": 109951167912701800
+                },
+                "dt": 180981,
+                "h": {
+                    "br": 320000,
+                    "fid": 0,
+                    "size": 7241325,
+                    "vd": -45484,
+                    "sr": 48000
+                },
+                "m": {
+                    "br": 192000,
+                    "fid": 0,
+                    "size": 4344813,
+                    "vd": -42850,
+                    "sr": 48000
+                },
+                "l": {
+                    "br": 128000,
+                    "fid": 0,
+                    "size": 2896557,
+                    "vd": -41167,
+                    "sr": 48000
+                },
+                "sq": {
+                    "br": 893870,
+                    "fid": 0,
+                    "size": 20221741,
+                    "vd": -45453,
+                    "sr": 48000
+                },
+                "hr": {
+                    "br": 1663360,
+                    "fid": 0,
+                    "size": 37629652,
+                    "vd": -45453,
+                    "sr": 48000
+                },
+                "a": null,
+                "cd": "01",
+                "no": 1,
+                "rtUrl": null,
+                "ftype": 0,
+                "rtUrls": [],
+                "djId": 0,
+                "copyright": 0,
+                "s_id": 0,
+                "mark": 536879104,
+                "originCoverType": 1,
+                "originSongSimpleData": null,
+                "tagPicList": null,
+                "resourceState": true,
+                "version": 4,
+                "songJumpInfo": null,
+                "entertainmentTags": null,
+                "awardTags": null,
+                "single": 0,
+                "noCopyrightRcmd": null,
+                "mst": 9,
+                "cp": 0,
+                "rtype": 0,
+                "rurl": null,
+                "mv": 0,
+                "publishTime": 0
+            }
+        ],
+        "privileges": [
+            {
+                "id": 1984821452,
+                "fee": 8,
+                "payed": 0,
+                "st": 0,
+                "pl": 128000,
+                "dl": 0,
+                "sp": 7,
+                "cp": 1,
+                "subp": 1,
+                "cs": false,
+                "maxbr": 999000,
+                "fl": 128000,
+                "toast": false,
+                "flag": 4,
+                "preSell": false,
+                "playMaxbr": 999000,
+                "downloadMaxbr": 999000,
+                "maxBrLevel": "hires",
+                "playMaxBrLevel": "hires",
+                "downloadMaxBrLevel": "hires",
+                "plLevel": "standard",
+                "dlLevel": "none",
+                "flLevel": "standard",
+                "rscl": null,
+                "freeTrialPrivilege": {
+                    "resConsumable": false,
+                    "userConsumable": false,
+                    "listenType": null
+                },
+                "chargeInfoList": [
+                    {
+                        "rate": 128000,
+                        "chargeUrl": null,
+                        "chargeMessage": null,
+                        "chargeType": 0
+                    },
+                    {
+                        "rate": 192000,
+                        "chargeUrl": null,
+                        "chargeMessage": null,
+                        "chargeType": 1
+                    },
+                    {
+                        "rate": 320000,
+                        "chargeUrl": null,
+                        "chargeMessage": null,
+                        "chargeType": 1
+                    },
+                    {
+                        "rate": 999000,
+                        "chargeUrl": null,
+                        "chargeMessage": null,
+                        "chargeType": 1
+                    },
+                    {
+                        "rate": 1999000,
+                        "chargeUrl": null,
+                        "chargeMessage": null,
+                        "chargeType": 1
+                    }
+                ]
+            }
+        ],
+        "code": 200
+    },
+    "cookie": []
+}

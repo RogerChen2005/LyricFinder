@@ -1,0 +1,4 @@
+/NeteaseCloudMusicApi
+**/node_modules
+**/module
+backend/dist/
