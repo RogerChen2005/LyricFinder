@@ -1,6 +1,8 @@
+const { json } = require("express");
 const {search,lyric,song_detail,song_url_v1,login_qr_key,login_qr_create,user_account,user_playlist,playlist_track_all} = require("../api")
 const fs = require("fs");
 const path = require("path");
+const { cookie } = require("request");
 
 async function search_query(query){
     let result = await search({
@@ -19,7 +21,8 @@ async function get_song_detail(query){
 async function get_song_url(query){
     let result = await song_url_v1({
         id:query.id,
-        level:query.level
+        level:query.level,
+        cookie:query.cookie
     });
     fs.writeFileSync(path.join(__dirname,"result.json"),JSON.stringify(result));
 }
@@ -66,6 +69,8 @@ async function get_lyric(query){
     fs.writeFileSync(path.join(__dirname,"result.json"),JSON.stringify(result));
 }
 
-get_lyric({
-    id:'1302261241'
+get_song_url({
+        id: 1297986663,
+        level:"exhigh",
+        cookie:JSON.parse(fs.readFileSync('./cookie.json')).cookie
 })

@@ -143,8 +143,8 @@ async function download(queue,options){
     }
 }
 
-lyric_download({
-    id: 1302261241,
-    title:'calico',
+music_download({
+    id: 1297986663,
+    title:'friends',
     artists:'sda,d'
 }, settings);

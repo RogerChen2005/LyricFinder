@@ -44,7 +44,7 @@
         <SongList :trylisten="try_listen" :add_item="add_item"/>
       </div>
       <div class="page" v-if="current_tab == 3">
-        <DownloadPage :queue="queue" />
+        <DownloadPage :queue="queue" :socket="socket"/>
       </div>
       <div class="page" v-if="current_tab == 4">
         <SearchPage :trylisten="try_listen" :add_item="add_item" />
@@ -99,11 +99,6 @@ export default {
     },
     try_listen(data) {
       this.$refs.player.init(data);
-      ElNotification({
-        title: 'Success',
-        message: '已开始播放',
-        type: 'success',
-      });
     },
     add_item(args) {
       this.queue.push(args);

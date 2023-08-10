@@ -1,9 +1,7 @@
-const url = require("url");
-const path = require("path");
-const fs = require("fs");
 const ws = require('ws');
 const express = require('express');
 const functions = require("./functions.js");
+const download = require('./download.js');
 
 const wss = new ws.WebSocketServer({ port: 3000 }, () => {
   console.log("WebSocketServer running at http://127.0.0.1:3000");
@@ -15,13 +13,15 @@ wss.on('connection', (socket) => {
 });
 
 function send(target,message){
-  wss.clients.forEach((socket)=>{
-    socket.send(JSON.stringify({
-      target:target,
-      message:message
-    }))
-  })
-}
+    wss.clients.forEach((socket)=>{
+      socket.send(JSON.stringify({
+        target:target,
+        message:message
+      }))
+    })
+  }
+
+download.set_socket(send);
 
 async function onMessage(socket, command) {
   let cmd = JSON.parse(command);

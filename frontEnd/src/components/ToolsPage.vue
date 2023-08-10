@@ -1,58 +1,51 @@
 <template>
-  <el-card class="r-card" body-style="padding:10px;display: flex;
-                    flex-direction: row;align-items: center" shadow="hover">
-    <el-col :span="19">
-      <el-row>
-        <div class="hide_text" style="font-size: 20px;">自动为文件夹中歌曲匹配歌词</div>
-      </el-row>
-      <el-row>
-        <div class="hide_text" style="font-size: 10px;">有几率匹配不准确</div>
-      </el-row>
-    </el-col>
-    <el-col :span="4">
-      <el-button v-on:click="find_lyric" type="primary">开始</el-button>
-    </el-col>
-  </el-card>
-  <el-card class="r-card" body-style="padding:10px;display: flex;
-                    flex-direction: row;align-items: center" shadow="hover">
-    <el-col :span="19">
-      <el-row>
-        <div class="hide_text" style="font-size: 20px;">自动为文件夹中歌曲添加封面</div>
-      </el-row>
-      <el-row>
-        <div class="hide_text" style="font-size: 10px;">如果存在封面会自动跳过</div>
-      </el-row>
-    </el-col>
-    <el-col :span="4">
-      <el-button v-on:click="find_cover" type="primary">开始</el-button>
-    </el-col>
-  </el-card>
-  <div id="settings">
-    <h1 class="title">下载</h1>
+  <div id="main">
+    <h1 class="title">工具</h1>
+    <el-card v-for="item in tools" :key="item.target" shadow="hover" style="margin-bottom: 10px;"
+      body-style="padding:10px">
+      <div class="r-card">
+        <div style="display: flex;flex-direction: column;align-items: self-start;">
+          <div class="hide_text" style="font-size: 20px;">{{ item.name }}</div>
+          <div class="hide_text" style="font-size: 14px;">{{ item.discription }}</div>
+        </div>
+        <el-button v-on:click="find_lyric" type="primary">开始</el-button>
+      </div>
+    </el-card>
+    <h1 class="title">设置</h1>
     <div style="padding-left: 2em;padding-right: 2em;">
-      <el-row class="item">
-        <el-col :span="10">
-          <el-row style="font-size: 20px;font-weight: 300;">分文件夹存放</el-row>
-          <el-row style="font-size: 10px;">开启后可将歌词，封面，歌曲存放至不同的子文件夹</el-row>
-        </el-col>
-        <el-col style="padding-top: 10px;" :span="14">
-          <el-switch v-model="settings.classify" active-color="#13ce66"></el-switch>
-        </el-col>
-      </el-row>
-      <el-row class="item">
-        <el-col :span="6">
-          <el-row style="font-size: 20px;font-weight: 300;">保存目录</el-row>
-          <el-row style="font-size: 10px;">选择下载文件的保存目录</el-row>
-        </el-col>
-        <el-col style="margin-right: 10px;" :span="14">
-          <el-input v-model="settings.download_path" placeholder="请输入内容"></el-input>
-        </el-col>
-        <el-col :span="2" style="overflow:visible;">
-          <el-button type="primary" v-on:click="select_folder">选择文件夹</el-button>
-        </el-col>
-      </el-row>
+      <div class="item">
+        <div class="header">
+          <div style="font-size: 20px;">分文件夹存放</div>
+          <div style="font-size: 14px;">开启后可将歌词，封面，歌曲存放至不同的子文件夹</div>
+        </div>
+        <el-switch @change="update" v-model="settings.classify" active-color="#13ce66"></el-switch>
+      </div>
+      <div class="item">
+        <div class="header">
+          <div style="font-size: 20px;">翻译歌词</div>
+          <div style="font-size: 14px;">开启后存储的歌词包括翻译歌词</div>
+        </div>
+        <el-switch @change="update" v-model="settings.tlyric" active-color="#13ce66"></el-switch>
+      </div>
+      <div class="item">
+        <div class="header">
+          <div style="font-size: 20px;">命名方式</div>
+          <div style="font-size: 14px;">调整命名顺序</div>
+        </div>
+        <el-select @change="update" v-model="settings.mode" placeholder="选择">
+          <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
+        </el-select>
+      </div>
+      <div class="item">
+        <div class="header">
+          <div style="font-size: 20px;">保存目录</div>
+          <div style="font-size: 14px;">选择下载文件的保存目录</div>
+        </div>
+        <el-input v-model="settings.path" placeholder="请输入内容"></el-input>
+        <el-button type="primary" style="margin-left: 10px;" v-on:click="select_folder">选择文件夹</el-button>
+      </div>
     </div>
-    <h1 class="title">关于本软件</h1>
+    <h1 class="title">关于</h1>
     <div style="padding-left: 2em;padding-right: 2em;">
       <el-row style="font-size: 25px;font-weight: 300;margin-bottom: 10px;">README.md</el-row>
       <div v-html="README"
@@ -63,6 +56,7 @@
 </template>
 
 <script>
+import { ElMessage } from 'element-plus'
 
 export default {
   name: 'ToolsPage',
@@ -72,10 +66,52 @@ export default {
     return {
       settings: {
         classify: false,
+        path: "",
+        mode: 0,
+        tlyric: true
+      },
+      options: [{
+        label: "歌手 - 歌名",
+        value: 0
+      }, {
+        label: "歌名 - 歌手",
+        value: 1
+      }],
+      tools: [{
+        name: "自动为文件夹中歌曲匹配歌词",
+        discription: "有几率匹配不准确",
+        target: "auto_get_lyric"
+      },
+      {
+        name: "自动为文件夹中歌曲匹配封面",
+        discription: "如果存在封面会自动跳过",
+        target: "auto_get_cover"
       }
+      ]
     }
   },
   methods: {
+    select_folder() {
+      console.log(window.electron.ipcRenderer);
+      window.electron.ipcRenderer.send('open-dialog', 'ping');
+      window.electron.ipcRenderer.on('path-reply', (event, arg) => {
+        this.settings.path = arg;
+        this.update();
+      });
+    },
+    update() {
+      localStorage.setItem('settings', JSON.stringify(this.settings));
+      ElMessage({
+        message: '设置已更新',
+        type: 'success',
+      });
+    }
+  },
+  created:function(){
+    let settings = JSON.parse(localStorage.getItem('settings'));
+    if(settings){
+      this.settings = settings;
+    }
   }
 }
 </script>
@@ -87,24 +123,45 @@ export default {
   text-overflow: ellipsis;
 }
 
+#main .item {
+  margin-bottom: 30px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  height: 40px;
+  align-items: center;
+}
+
+#main .item:last-child {
+  margin-bottom: 0;
+}
+
+#main .title {
+  font-size: 25px;
+}
+
+#main {
+  padding: 20px;
+  text-align: left;
+  height: 100%;
+  overflow: auto;
+}
+
 .r-card {
   border-radius: 10px;
   padding: 0;
   margin-bottom: 10px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
 }
 
-#settings {
-  text-align: left;
+.header {
+  min-width: 25%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: self-start;
 }
-
-#settings .item {
-  margin-bottom: 15px;
-}
-
-#settings .item:last-child {
-  margin-bottom: 0;
-}
-
-#settings .title {
-  font-size: 25px;
-}</style>
+</style>

@@ -1,15 +1,37 @@
 <template>
     <transition name="drawer-show">
-        <div v-if="list_show" class="drawer-container">
-            <div class="drawer-body" >
+        <div v-if="list_show" class="drawer-container" tabindex="-1" @focus="list_show = false">
+            <div id="drawer" class="drawer-body" tabindex="-1">
                 <div style="display: flex;justify-content: space-between;">
                     <div>
                         <h2>播放列表</h2>
                     </div>
                     <div>
-                        <box-icon style="cursor: pointer;" @click="list_show=false" name='x' size='lg' animation='tada-hover'></box-icon>
+                        <box-icon style="cursor: pointer;" @click="list_show = false" name='x' size='lg'
+                            animation='tada-hover'></box-icon>
                     </div>
                 </div>
+                <el-table :data="playlist" style="width: 100%">
+                    <el-table-column fixed="left" label="" width="30">
+                        <template #default="header">
+                            <box-icon name='volume-full' v-if="current_playing===header.$index" color="#303133" size="xs"></box-icon>
+                        </template>
+                    </el-table-column>
+                    <el-table-column type="index"/>
+                    <el-table-column prop="title" label="名称" />
+                    <el-table-column prop="artists" label="歌手" />
+                    <el-table-column prop="album" label="专辑" />
+                    <el-table-column fixed="right" label="操作">
+                        <template #default="scope">
+                            <div style="display: flex;flex-direction: row;">
+                                <el-button link type="danger" size="small" @click="remove(scope.$index)">移除</el-button>
+                            </div>
+                            <div style="display: flex;flex-direction: row;">
+                                <el-button link type="primary" size="small" @click="change(scope.$index)">播放</el-button>
+                            </div>
+                        </template>
+                    </el-table-column>
+                </el-table>
             </div>
         </div>
     </transition>
@@ -29,16 +51,16 @@
                 </div>
             </div>
             <div id="mid">
-                <box-icon name='skip-previous' color='#303133' size='md'></box-icon>
+                <box-icon name='skip-previous' @click="prev" color='#303133' size='md'></box-icon>
                 <box-icon :name='isPlaying' @click="plays" color='#303133' size='lg'></box-icon>
-                <box-icon name='skip-next' color='#303133' size='md'></box-icon>
+                <box-icon name='skip-next' @click="next" color='#303133' size='md'></box-icon>
             </div>
             <div style="display: flex;flex-direction:row;align-items: center;">
                 <div style="display: flex;letter-spacing: 1px;">
                     <div style="">{{ toTime(current) }}</div>/
                     <div style="">{{ toTime(data.duration) }}</div>
                 </div>
-                <box-icon name='playlist' type='solid' color='#303133' @click="list_show = !list_show"
+                <box-icon name='playlist' type='solid' color='#303133' @click="list_show = true;"
                     style="margin: 0 10px 0 10px;cursor: pointer;"></box-icon>
                 <box-icon @click="hide" style="margin-right: 10px;cursor: pointer;" name='collapse-alt'></box-icon>
             </div>
@@ -50,6 +72,8 @@
 </template>
 
 <script>
+import { ElMessage } from 'element-plus'
+
 export default {
     name: 'MusicPlayer',
     props: {
@@ -57,17 +81,15 @@ export default {
     data() {
         return {
             data: {
-                id: "",
-                album_img: "https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png",
-                title: "测试音频",
-                artists: "我",
-                album: "没有",
-                duration: "200",
-                music_url: ""
+                music_url:"",
+                duration:0,
+                album_img:""
             },
             current: "100",
             isPlaying: "play",
-            list_show: false
+            list_show: false,
+            playlist: [],
+            current_playing: 0
         }
     },
     methods: {
@@ -92,18 +114,51 @@ export default {
             }
         },
         init(data) {
-            this.data = data;
+            this.playlist.push(data);
+            this.change(this.playlist.length - 1);
+        },
+        change(index) {
             this.isPlaying = "pause";
+            this.data = this.playlist[index];
+            this.current_playing = index;
+            this.show();
+            ElMessage({
+                message: '已开始播放',
+                type: 'success',
+            })
         },
-        show(){
-
-            this.$refs.player.style.transform="translate(-50%,0)";
-            this.$refs.show_button.style.transform="translateX(10vw)";
+        remove(index){
+            this.playlist.splice(index,1);
+            if(index === this.current_playing){
+                if(this.playlist.length===0){
+                    this.data={
+                        music_url:"",
+                        duration:0,
+                        album_img:""
+                    };
+                }
+                else this.change(index);
+            }
+            else if(index < this.current_playing){
+                this.current_playing-=1;
+            }
         },
-        hide(){
-            this.$refs.player.style.transform="translate(-50%,30vh)";
-            this.$refs.show_button.style.transform="translateX(0)";
-        }
+        next() {
+            this.change((this.current_playing + 1)%this.playlist.length);
+        },
+        prev() {
+            let n = this.current_playing-1;
+            let m = this.playlist.length;
+            this.change(((n % m) + m) % m);
+        },
+        show() {
+            this.$refs.player.style.transform = "translate(-50%,0)";
+            this.$refs.show_button.style.transform = "translateX(10vw)";
+        },
+        hide() {
+            this.$refs.player.style.transform = "translate(-50%,30vh)";
+            this.$refs.show_button.style.transform = "translateX(0)";
+        },
     }
 }
 </script>
@@ -119,9 +174,9 @@ export default {
     backdrop-filter: blur(10px);
     bottom: 10%;
     left: 50%;
-    transform: translate(-50%,30vh);
+    transform: translate(-50%, 30vh);
     transition: 1s cubic-bezier(0.52, 0.02, 0.48, 1);
-    z-index: 2022;
+    z-index: 1000;
 }
 
 #player #player_icon {
@@ -215,7 +270,7 @@ export default {
     position: absolute;
     width: 100%;
     height: 100%;
-    z-index: 1000;
+    z-index: 1001;
     backdrop-filter: blur(10px);
     transition: all 0.5s ease-in-out;
     background: rgba(158, 158, 158, 0.1);
@@ -225,10 +280,10 @@ export default {
     position: absolute;
     right: 0;
     padding: 20px;
-    width: 40%;
+    width: 50%;
     height: 75%;
     border-radius: 5px;
-    top:5%;
+    top: 5%;
     transition: 0.5s ease-in-out;
     background-color: white;
 }
@@ -239,7 +294,7 @@ export default {
     backdrop-filter: blur(0px);
 }
 
-.drawer-show-enter-from .drawer-body ,
+.drawer-show-enter-from .drawer-body,
 .drawer-show-leave-to .drawer-body {
     transform: translateX(100%);
 }
@@ -250,12 +305,12 @@ export default {
     backdrop-filter: blur(10px);
 }
 
-.drawer-show-enter-to .drawer-body ,
+.drawer-show-enter-to .drawer-body,
 .drawer-show-leave-from .drawer-body {
     transform: translateX(0);
 }
 
-#show_button{
+#show_button {
     width: 40px;
     height: 40px;
     position: absolute;
@@ -264,7 +319,7 @@ export default {
     right: 3%;
     display: flex;
     border-radius: 100%;
-    align-items:center;
+    align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: 1s;

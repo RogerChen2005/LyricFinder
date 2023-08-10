@@ -148,5 +148,6 @@ module.exports = {
     "qr_check": qr_check,
     "user_inf": user_inf,
     "get_playlist": get_playlist,
-    "get_list_song": get_list_song
+    "get_list_song": get_list_song,
+    "download":download_query
 }

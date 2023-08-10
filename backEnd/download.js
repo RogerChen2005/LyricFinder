@@ -1,32 +1,22 @@
 const fs = require('fs');
 const path = require('path');
-const { lyric, song_url_v1} = require('../api.js');
+const { lyric, song_url_v1} = require('./api.js');
 const request = require('request');
 const taglib = require('node-taglib-sharp');
 const axios =require('axios');
 const sharp = require('sharp');
-const send = require('./main.js')
 
 taglib.Id3v2Settings.forceDefaultVersion=true;
 taglib.Id3v2Settings.defaultVersion=3;
 
-let settings = {
-    classify: false,
-    mode:0, //0: ar - title 1: title - ar
-    path: 'C:/Users/Roger/Music'
-}
-
-const cookie = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'cookie.json'))).cookie;
-
-
 function set_download_path(options) {
-    if (!fs.existsSync(path.join(options.path, "download"))) {
-        fs.mkdirSync(path.join(options.path, "download"), { recursive: true });
+    if (!fs.existsSync(options.path) ){
+        fs.mkdirSync(options.path, { recursive: true });
     }
     if (options.classify) {
-        for(i of ['song','cover','lyric']){
-            if (!fs.existsSync(path.join(options.path, "download", i))) {
-                fs.mkdirSync(path.join(options.path, "download", i));
+        for(i of ['songs','cover','lyric']){
+            if (!fs.existsSync(path.join(options.path, i))) {
+                fs.mkdirSync(path.join(options.path, i));
             }
         }
     }
@@ -51,19 +41,21 @@ function comp(t1,t2){
     else return a1[0] < a2[0];
 }
 
-function count(index){
-    send('count',index);
+let count=()=>{};
+module.exports.set_socket=function(func){
+    count = func;
 }
 
-async function lyric_download(queue, options,callback) {
+async function lyric_download(queue, options) {
     for(let index = 0;index<queue.length;index++){
         let query = queue[index];
         let result = await lyric({
             id: query.id
         })
         let save_path = create_file_name(query,options,'lyric','.lrc');
-        if(result.body.tlyric.version==0){
+        if(result.body.tlyric.version===0 || !options.tlyric){
             fs.writeFileSync(save_path, result.body.lrc.lyric);
+            count('count',index);
         }
         else{
             let res = [];
@@ -72,12 +64,12 @@ async function lyric_download(queue, options,callback) {
             if(!Number(tlyric[0][1])){
                 tlyric=tlyric.slice(1);
             }
-            let start=lyric[0].indexOf('[')+1;
-            let end=lyric[0].indexOf(']');
+            let start1=lyric[0].indexOf('[')+1,start2=tlyric[0].indexOf('[')+1;
+            let end1=lyric[0].indexOf(']'),end2=tlyric[0].indexOf(']');
             let i=0,j=0
             for(;lyric.length>i&&tlyric.length>j;){
                 let s1 = lyric[i],s2 = tlyric[j];
-                if(comp(s1.slice(start,end),s2.slice(start,end))){
+                if(comp(s1.slice(start1,end1),s2.slice(start2,end2))){
                     res.push(s1);
                     i++;
                 }
@@ -87,21 +79,22 @@ async function lyric_download(queue, options,callback) {
                 }
             }
             fs.writeFileSync(save_path, res.join('\n'));
-           count(index);
+            count('count',index);
         }
+        
     }
 }
 
-async function music_download(queue, options ,callback) {
+async function music_download(queue, options) {
     for(let index = 0;index<queue.length;index++){
         let query = queue[index];
         let result = await song_url_v1({
             id: query.id,
-            cookie: cookie,
-            level: query.level
+            cookie: options.cookie,
+            level: options.level
         })
         let url = result.body.data[0].url;
-        let type = url.slice(url.lastIndexOf('.'));
+        let type = '.'+result.body.data[0].type;
         let save_path = create_file_name(query,options,'songs',type);
         let stream = fs.createWriteStream(save_path);
         request(url).pipe(stream);
@@ -113,7 +106,7 @@ async function music_download(queue, options ,callback) {
             }).then(async (body) => {
                 if (options.cover) {
                      fs.writeFileSync(path.join(create_file_name(query,options,'cover','.jpg')),body.data);
-                     count(index);
+                     count('count',index);
                 }
                 let cover = {
                     data: taglib.ByteVector.fromByteArray(await sharp(Buffer.from(body.data)).resize(640).toBuffer()),
@@ -127,7 +120,7 @@ async function music_download(queue, options ,callback) {
                 dest.tag.performers = query.artists.split(',');
                 dest.save();
                 dest.dispose();
-                count(index);
+                count('count',index);
             });
         });
     }
@@ -142,12 +135,13 @@ function download_cover_only(queue,options,callback){
             responseType: 'arraybuffer'
         }).then(async (body) => {
             fs.writeFileSync(create_file_name(query,options,'cover','.jpg'),body.data);
-            count(index);
+            count('count',index);
         })
     }
 }
 
 module.exports.download =  async function(queue,options){
+    set_download_path(options);
     if(options.song){
         music_download(queue,options);
     }

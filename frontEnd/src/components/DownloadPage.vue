@@ -11,7 +11,8 @@
                 <el-table-column fixed="right" label="操作" width="500">
                     <template #default="scope">
                         <div style="display: flex;flex-direction: row;">
-                            <el-progress></el-progress>
+                            <el-progress :percentage="queue[scope.$index].current / queue[scope.$index].total * 100"
+                                style="width: 80%;"></el-progress>
                             <el-button link type="danger" size="small" @click="remove_row(scope.$index)">移除</el-button>
                         </div>
                     </template>
@@ -43,7 +44,8 @@ import { ElNotification } from 'element-plus'
 export default {
     name: 'DownloadPage',
     props: {
-        queue: Array
+        queue: Array,
+        socket: WebSocket
     },
     data() {
         return {
@@ -88,35 +90,68 @@ export default {
             bitrate: "lossless",
             song: true,
             lyric: true,
-            cover: false
+            cover: false,
+            task_remain: 0
         }
     },
     methods: {
         remove_row(index) {
             this.list.splice(index, 1);
         },
-        download() {
-            axios.post("http://localhost:3030/func", {
-                target: "download",
-                data: {
-                    queue: this.queue,
-                    options: {
-                        song: this.song,
-                        lyric: this.lyric,
-                        cover: this.cover,
-                        classify: true,
-                        mode: 0,
-                        path: ""
-                    }
-                }
-            }).then((res) => {
-                console.log(res);
+        count(message) {
+            let index = JSON.parse(message.data).message;
+            this.list[index].current += 1;
+            this.task_remain -= 1;
+            if (this.task_remain === 0) {
+                this.list.splice(0);
                 ElNotification({
-                    title: '提示',
-                    message: '下载已经开始',
-                    type: 'info',
+                    title: '成功',
+                    message: '下载完成',
+                    type: 'success',
                 });
-            })
+            }
+        },
+        download() {
+            let options = JSON.parse(localStorage.getItem('settings'));
+            if (options) {
+                if (!options.save_path) {
+                    let task_each = this.song + this.cover + this.lyric;
+                    this.task_remain = task_each * this.queue.length;
+                    options.song = this.song;
+                    options.cover = this.cover;
+                    options.lyric = this.lyric;
+                    options.cookie = localStorage.getItem('cookie');
+                    options.level = this.bitrate;
+                    axios.post("http://localhost:3030/func", {
+                        target: "download",
+                        data: {
+                            queue: this.queue,
+                            options: options
+                        }
+                    }).then((res) => {
+                        console.log(res);
+                        ElNotification({
+                            title: '提示',
+                            message: '下载已经开始',
+                            type: 'info',
+                        });
+                        var count = this.count;
+                        console.log(count);
+                        this.socket.addEventListener('message', count);
+                    })
+                    for (let i in this.list) {
+                        this.list[i].current = 0;
+                        this.list[i].total = task_each;
+                    }
+                    return;
+                }
+            }
+            ElNotification({
+                title: '错误',
+                message: '请先设置下载路径',
+                type: 'error',
+            });
+            return;
         }
     },
 }
