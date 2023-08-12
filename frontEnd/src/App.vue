@@ -44,7 +44,7 @@
         <SongList :trylisten="try_listen" :add_item="add_item"/>
       </div>
       <div class="page" v-if="current_tab == 3">
-        <DownloadPage :queue="queue" :socket="socket"/>
+        <DownloadPage :queue="queue"/>
       </div>
       <div class="page" v-if="current_tab == 4">
         <SearchPage :trylisten="try_listen" :add_item="add_item" />
@@ -78,14 +78,10 @@ export default {
   data() {
     return {
       current_tab: 2,
-      socket: new WebSocket('ws://localhost:3000'),
       queue: []
     }
   },
   created() {
-    this.socket.addEventListener('open', function () {
-      console.log("Conneced!");
-    });
     let queue = localStorage.getItem("queue");
     queue == null ? this.queue = [] : this.queue = JSON.parse(queue)
   },

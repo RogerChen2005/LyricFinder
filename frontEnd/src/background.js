@@ -1,7 +1,7 @@
 'use strict'
 
 const path = require('path');
-import { app, protocol, BrowserWindow, ipcMain,dialog} from 'electron'
+import { app, protocol, BrowserWindow, ipcMain, dialog } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 // import installExtension, { VUEJS3_DEVTOOLS } from 'electron-devtools-installer'
 const isDevelopment = process.env.NODE_ENV !== 'production'
@@ -17,16 +17,13 @@ async function createWindow() {
     width: 1100,
     height: 700,
     webPreferences: {
-
-      // Use pluginOptions.nodeIntegration, leave this alone
-      // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
       nodeIntegration: true,
       contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
       webSecurity: false,
       preload: path.join(__dirname, "preload.js")
     }
   })
-
+  win.removeMenu();
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
     await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL)
@@ -35,7 +32,33 @@ async function createWindow() {
     createProtocol('app')
     // Load the index.html when not in development
     win.loadURL('app://./index.html')
+    // win.loadURL('app://')
   }
+
+  ipcMain.on("open-tools", (event, name) => {
+    var toolWin = new BrowserWindow({
+      width: 800,
+      height: 900,
+      webPreferences: {
+        nodeIntegration: true,
+        preload: path.join(__dirname, "preload.js")
+      }
+    })
+    toolWin.removeMenu();
+    if (process.env.WEBPACK_DEV_SERVER_URL) {
+      toolWin.loadURL(process.env.WEBPACK_DEV_SERVER_URL+`tools/${name}`);
+    } else {
+      toolWin.loadURL(`app://./index.html/tools/${name}`);
+    }
+    toolWin.on('closed', () => { toolWin = null });
+  })
+
+  ipcMain.handle("file-picker", async () => {
+    let { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openDirectory'] });
+    if (!canceled) {
+      return filePaths[0];
+    }
+  });
 }
 
 // Quit when all windows are closed.
@@ -58,7 +81,7 @@ app.on('activate', () => {
 // Some APIs can only be used after this event occurs.
 app.on('ready', async () => {
   // if (isDevelopment && !process.env.IS_TEST) {
-    // Install Vue Devtools
+  // Install Vue Devtools
   //   try {
   //     await installExtension(VUEJS3_DEVTOOLS)
   //   } catch (e) {
@@ -82,13 +105,3 @@ if (isDevelopment) {
     })
   }
 }
-
-ipcMain.on("open-dialog", (event, arg) => {
-  dialog.showOpenDialog({ properties: ['openDirectory'] })
-    .then(function (response) {
-      // if (!response.canceled) {
-        // handle fully qualified file name
-        event.reply("path-reply", response.filePaths[0])
-      // }
-    });
-})

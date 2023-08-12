@@ -45,11 +45,11 @@ export default {
     name: 'DownloadPage',
     props: {
         queue: Array,
-        socket: WebSocket
     },
     data() {
         return {
             list: this.queue,
+            socket: undefined,
             quality: [
                 {
                     label: "标准",
@@ -104,6 +104,7 @@ export default {
             this.task_remain -= 1;
             if (this.task_remain === 0) {
                 this.list.splice(0);
+                this.socket.close();
                 ElNotification({
                     title: '成功',
                     message: '下载完成',
@@ -135,9 +136,13 @@ export default {
                             message: '下载已经开始',
                             type: 'info',
                         });
-                        var count = this.count;
-                        console.log(count);
-                        this.socket.addEventListener('message', count);
+                        let socket = new WebSocket('ws://localhost:3000');
+                        this.socket = socket;
+                        socket.addEventListener('open', function open() {
+                            console.log("Conneced!");
+                            socket.removeEventListener('open', open);
+                        });
+                        socket.addEventListener('message', this.count);
                     })
                     for (let i in this.list) {
                         this.list[i].current = 0;

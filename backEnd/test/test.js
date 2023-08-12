@@ -69,8 +69,7 @@ async function get_lyric(query){
     fs.writeFileSync(path.join(__dirname,"result.json"),JSON.stringify(result));
 }
 
-get_song_url({
-        id: 1297986663,
-        level:"exhigh",
-        cookie:JSON.parse(fs.readFileSync('./cookie.json')).cookie
+
+search_query({
+    key:"12"
 })
