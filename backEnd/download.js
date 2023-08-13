@@ -109,7 +109,7 @@ async function music_download(queue, options) {
                      count('count',index);
                 }
                 let cover = {
-                    data: taglib.ByteVector.fromByteArray(await sharp(Buffer.from(body.data)).resize(640).toBuffer()),
+                    data: taglib.ByteVector.fromByteArray(Buffer.from(body.data)),
                     mimeType: 'image/jpeg',
                     type: taglib.PictureType.FrontCover,
                 }
