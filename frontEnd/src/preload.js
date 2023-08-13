@@ -1,8 +1,5 @@
 const { contextBridge, ipcRenderer } = require("electron");    
-contextBridge.exposeInMainWorld("electron", {
-  ipcRenderer: {
-    ...ipcRenderer,
-    on: ipcRenderer.on.bind(ipcRenderer),
-    removeListener: ipcRenderer.removeListener.bind(ipcRenderer),
-  },
+contextBridge.exposeInMainWorld("electronAPI", {
+  filePicker:()=>ipcRenderer.invoke('file-picker'),
+  openToolWin:(name)=>ipcRenderer.send('open-tools',name)
 });

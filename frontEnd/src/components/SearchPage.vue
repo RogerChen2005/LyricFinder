@@ -66,7 +66,6 @@ export default {
         to_search() {
             this.search_query(1, (result) => {
                 {
-                    console.log(result);
                     this.searchlist = result.songs;
                     this.count = result.count;
                 }
@@ -110,7 +109,7 @@ export default {
                     id: "" + i.id,
                 }
             })
-            data.album_img = result.album.img;
+            data.album_img = result.data.album_img;
             this.trylisten(data);
         },
         key_check(e) {

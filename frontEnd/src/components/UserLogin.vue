@@ -11,7 +11,11 @@
                             animation='tada-hover'></box-icon>
                     </div>
                 </div>
-                <div style="width: 200px;height: 200px;margin: 0;position: relative;">
+                <div v-if="way_select">
+                    <el-button v-on:click="Login_qr(callback)" type="primary" style="margin-left: 20px;">二维码登录（推荐）</el-button>
+                    <el-button v-on:click="Login_cookie()" type="success" style="margin-left: 20px;">cookie登录</el-button>
+                </div>
+                <div v-if="qr_login" style="width: 200px;height: 200px;margin: 0;position: relative;">
                     <div v-if="scan_success" class="mask">
                         <box-icon size="lg" name='check-circle' color='#409EFF'></box-icon>
                         <div>已扫描</div>
@@ -21,6 +25,17 @@
                         <div>已过期</div>
                     </div>
                     <img :src="qrimg" />
+                    <el-button v-on:click="back" type="danger" style="margin-left: 20px;">返回</el-button>
+                </div>
+                <div v-if="cookie_login" style="width: 80%;">
+                    <div style="margin-bottom: 20px;">
+                        <el-input v-model="input_cookie" type="textarea" placeholder="请输入cookie">
+                        </el-input>
+                    </div>
+                    <div style="display: flex;justify-content: space-around;">
+                        <el-button v-on:click="confirm_cookie_login(callback)" type="primary" style="margin-left: 20px;">登录</el-button>
+                        <el-button v-on:click="back" type="danger" style="margin-left: 20px;">返回</el-button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -29,80 +44,120 @@
 
 <script>
 import axios from 'axios';
-import { ElNotification } from 'element-plus'
+import { ElButton, ElNotification } from 'element-plus'
 const path = "http://localhost:3030/"
 export default {
     name: 'UserLogin',
-    props: {
-    },
+    props: {},
     data() {
         return {
             login_show: false,
             scan_success: false,
             out_of_date: false,
             qrimg: "",
-            key: ""
-        }
+            key: "",
+            qr_login: false,
+            cookie_login: false,
+            way_select: true,
+            input_cookie: "",
+            callback: Function,
+            timer: undefined
+        };
     },
     methods: {
         Login(callback) {
             this.login_show = true;
+            this.callback = callback;
+        },
+        Login_cookie() {
+            this.way_select = false;
+            this.cookie_login = true;
+        },
+        confirm_cookie_login(callback){
+            localStorage.setItem('cookie', this.input_cookie);
+            ElNotification({
+                title: 'Success',
+                message: '登陆成功',
+                type: 'success',
+            });
+            this.login_show = false;
+            axios.post("http://localhost:3030/func", {
+                target: "user_inf",
+                data: {
+                    cookie: localStorage.getItem("cookie")
+                }
+            }).then((res) => {
+                localStorage['profile'] = JSON.stringify(res.data);
+                if (typeof callback == "function") {
+                    callback();
+                }
+            });
+        },
+        Login_qr(callback) {
+            this.way_select = false;
+            this.qr_login = true;
             axios.post(path + "func", {
                 target: "generate_qr_code",
                 data: {}
-            }).then(
-                (response) => {
-                    this.qrimg = response.data.qrimg;
-                    this.key = response.data.key;
-                    let timer = setInterval(() => {
-                        axios.post(path + "func", {
-                            target: "qr_check",
-                            data: {
-                                key: this.key
+            }).then((response) => {
+                this.qrimg = response.data.qrimg;
+                this.key = response.data.key;
+                this.timer = setInterval(() => {
+                    axios.post(path + "func", {
+                        target: "qr_check",
+                        data: {
+                            key: this.key
+                        }
+                    }).then((res) => {
+                        let statusRes = res.data;
+                        console.log(statusRes.code)
+                        if (statusRes.code === 800) {
+                            console.log("out_of_Date");
+                            this.out_of_date = true;
+                            clearInterval(this.timer);
+                        }
+                        if (statusRes.code === 802) {
+                            if (this.scan_success == false) {
+                                this.scan_success = true;
                             }
-                        }).then((res) => {
-                            let statusRes = res.data;
-                            if (statusRes.code === 800) {
-                                console.log("out_of_Date");
-                                this.out_of_date = true;
-                                clearInterval(timer);
-                            }
-                            if (statusRes.code === 802) {
-                                if (this.scan_success == false) {
-                                    this.scan_success = true;
+                        }
+                        if (statusRes.code === 803) {
+                            this.scan_success = false;
+                            this.out_of_date = false;
+                            clearInterval(this.timer);
+                            localStorage.setItem('cookie', statusRes.cookie);
+                            ElNotification({
+                                title: 'Success',
+                                message: '登陆成功',
+                                type: 'success',
+                            });
+                            this.login_show = false;
+                            axios.post("http://localhost:3030/func", {
+                                target: "user_inf",
+                                data: {
+                                    cookie: localStorage.getItem("cookie")
                                 }
-                            }
-                            if (statusRes.code === 803) {
-                                this.scan_success = false;
-                                this.out_of_date = false;
-                                console.log("success");
-                                clearInterval(timer);
-                                console.log(statusRes);
-                                localStorage.setItem('cookie', statusRes.cookie);
-                                ElNotification({
-                                    title: 'Success',
-                                    message: '登陆成功',
-                                    type: 'success',
-                                });
-                                this.login_show = false;
-                                axios.post("http://localhost:3030/func", {
-                                    target: "user_inf",
-                                    data: {
-                                        cookie: localStorage.getItem("cookie")
-                                    }
-                                }).then((res) => {
-                                    localStorage['profile'] = JSON.stringify(res.data);
-                                    if (typeof callback == "function") {
-                                        callback();
-                                    }
-                                });
-                            }
-                        })
-                    }, 1000);
-                }
-            )
+                            }).then((res) => {
+                                localStorage['profile'] = JSON.stringify(res.data);
+                                if (typeof callback == "function") {
+                                    callback();
+                                }
+                            });
+                        }
+                    });
+                }, 1000);
+            });
+        },
+        back() {
+            this.way_select = true;
+            this.qr_login = false;
+            this.cookie_login = false;
+            if (this.timer) {
+                clearInterval(this.timer);
+            }
         }
-    }
+    },
+    components: { ElButton }
 }
 </script>
 

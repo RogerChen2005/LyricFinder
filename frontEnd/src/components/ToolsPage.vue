@@ -8,7 +8,7 @@
           <div class="hide_text" style="font-size: 20px;">{{ item.name }}</div>
           <div class="hide_text" style="font-size: 14px;">{{ item.discription }}</div>
         </div>
-        <el-button v-on:click="find_lyric" type="primary">开始</el-button>
+        <el-button v-on:click="opentool(item.target)" type="primary">开始</el-button>
       </div>
     </el-card>
     <h1 class="title">设置</h1>
@@ -41,7 +41,7 @@
           <div style="font-size: 20px;">保存目录</div>
           <div style="font-size: 14px;">选择下载文件的保存目录</div>
         </div>
-        <el-input v-model="settings.path" placeholder="请输入内容"></el-input>
+        <el-input @change="update" v-model="settings.path" placeholder="请输入内容"></el-input>
         <el-button type="primary" style="margin-left: 10px;" v-on:click="select_folder">选择文件夹</el-button>
       </div>
     </div>
@@ -80,24 +80,21 @@ export default {
       tools: [{
         name: "自动为文件夹中歌曲匹配歌词",
         discription: "有几率匹配不准确",
-        target: "auto_get_lyric"
+        target: "FolderLyric"
       },
       {
         name: "自动为文件夹中歌曲匹配封面",
         discription: "如果存在封面会自动跳过",
-        target: "auto_get_cover"
+        target: "FolderCover"
       }
       ]
     }
   },
   methods: {
-    select_folder() {
-      console.log(window.electron.ipcRenderer);
-      window.electron.ipcRenderer.send('open-dialog', 'ping');
-      window.electron.ipcRenderer.on('path-reply', (event, arg) => {
-        this.settings.path = arg;
-        this.update();
-      });
+    async select_folder() {
+      this.settings.path = await window.electronAPI.filePicker();
+      this.update();
+      return;
     },
     update() {
       localStorage.setItem('settings', JSON.stringify(this.settings));
@@ -105,6 +102,9 @@ export default {
         message: '设置已更新',
         type: 'success',
       });
+    },
+    opentool(name){
+      return window.electronAPI.openToolWin(name);
     }
   },
   created:function(){

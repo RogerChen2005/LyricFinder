@@ -1,5 +1,5 @@
 const { search, song_url_v1, song_detail, login_qr_key, login_qr_create, login_qr_check, user_account, user_playlist, playlist_track_all } = require("./api.js")
-const {download} = require('./download.js')
+const { download, get_folder_songs } = require('./download.js')
 
 async function search_query(query) {
     let data = [];
@@ -9,9 +9,9 @@ async function search_query(query) {
         limit: 30
     });
     for (let i of result.body.result.songs) {
-        let artists=[];
-        for(j of i.artists){
-            artists.push(i.name);
+        let artists = [];
+        for (j of i.artists) {
+            artists.push(j.name);
         }
         data.push({
             id: i.id,
@@ -21,8 +21,8 @@ async function search_query(query) {
         });
     }
     return JSON.stringify({
-        songs:data,
-        count:result.body.result.songCount
+        songs: data,
+        count: result.body.result.songCount
     })
 }
 
@@ -31,16 +31,16 @@ async function get_song_detail(query) {
         ids: query.id
     });
     let res = result.body.songs[0]
-    let artists=[];
-    for(i of res.artists){
+    let artists = [];
+    for (i of res.ar) {
         artists.push(i.name);
     }
     return JSON.stringify({
-        id:res.id,
-        title:res.name,
-        artists:artists.join(','),
-        album:res.al.name,
-        alnum_img:res.al.picUrl
+        id: res.id,
+        title: res.name,
+        artists: artists.join(','),
+        album: res.al.name,
+        album_img: res.al.picUrl
     });
 }
 
@@ -135,8 +135,8 @@ async function get_list_song(query) {
     })
 }
 
-async function download_query(query){
-    download(query.queue,query.options);
+async function download_query(query) {
+    download(query.queue, query.options);
     return "{}";
 }
 
@@ -149,5 +149,6 @@ module.exports = {
     "user_inf": user_inf,
     "get_playlist": get_playlist,
     "get_list_song": get_list_song,
-    "download":download_query
+    "download": download_query,
+    "get_folder_songs": get_folder_songs
 }
