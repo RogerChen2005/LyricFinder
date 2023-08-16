@@ -1,12 +1,12 @@
 <template>
     <el-result v-if="!isLogin" icon="error" title="未登录" sub-title="请先登陆">
     </el-result>
-    <el-container style="height: 100%;">
-        <el-header v-if="isLogin" style="text-align: right;">
+    <el-container v-if="isLogin" style="height: 100%;">
+        <el-header  style="text-align: right;">
             <el-button style="margin: 20px;" type="primary" @click="get_songlist"><box-icon color="white"
                     name='refresh'></box-icon>刷新歌单</el-button>
         </el-header>
-        <el-main v-loading="loading" v-if="isLogin" style="padding:10px">
+        <el-main v-loading="loading" style="padding:10px;overflow: auto;height:100px">
             <div id="main">
                 <el-card v-on:click="open_drawer(item)" v-for="item in display_list" :key="item.img_url"
                     class="songlist_card" :body-style="{ padding: '10px', textAlign: 'left' }">
@@ -131,6 +131,10 @@ export default {
             if (profile != null) {
                 this.isLogin = true;
                 this.uid = profile['userid'];
+            }
+            else{
+                this.isLogin=false;
+                return;
             }
             let list = JSON.parse(localStorage.getItem('list'));
             if (list != null) {

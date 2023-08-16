@@ -176,7 +176,7 @@ export default {
     left: 50%;
     transform: translate(-50%, 30vh);
     transition: 1s cubic-bezier(0.52, 0.02, 0.48, 1);
-    z-index: 1000;
+    z-index: 2000;
 }
 
 #player #player_icon {
@@ -270,7 +270,7 @@ export default {
     position: absolute;
     width: 100%;
     height: 100%;
-    z-index: 1001;
+    z-index: 2002;
     backdrop-filter: blur(10px);
     transition: all 0.5s ease-in-out;
     background: rgba(158, 158, 158, 0.1);
@@ -323,5 +323,6 @@ export default {
     justify-content: center;
     cursor: pointer;
     transition: 1s;
+    z-index: 2001;
 }
 </style>

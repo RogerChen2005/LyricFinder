@@ -2,7 +2,23 @@
   <MusicPlayer ref="player" id="player" />
   <UserLogin ref="login" />
   <el-container id="container">
-    <el-aside id="aside" width="130px">
+    <el-header height="30px" id="header">
+        <img id="icon" src="@/assets/icon.png">
+        <div id='button-set'>
+            <div onclick="window.electronAPI.hide()" class="button">
+                <box-icon style="transform: scale(80%);" name='minus'></box-icon>
+            </div>
+            <div onclick="window.electronAPI.maximize()" class="button">
+                <box-icon  style="transform: scale(60%);"
+                name='rectangle'></box-icon>
+            </div>
+            <div onclick="window.electronAPI.close();" class="button" id="close">
+                <box-icon name='x'></box-icon>
+            </div>
+        </div>
+    </el-header>
+    <el-container>
+      <el-aside id="aside" width="130px">
       <el-menu id="menu" :default-active="current_tab" @select="onHandleSelect">
         <el-icon></el-icon><template #title>首页</template>
         <div id="logo">
@@ -56,6 +72,7 @@
         <UserPage :login="Login" />
       </div>
     </el-main>
+    </el-container>
   </el-container>
 </template>
 
@@ -114,7 +131,7 @@ export default {
           callback();
         }
       });
-    }
+    },
   },
 }
 </script>
@@ -131,6 +148,10 @@ export default {
     opacity: 1;
   }
 }
+#container{
+  width: 100%;
+  height: 100%;
+}
 
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
@@ -139,10 +160,6 @@ export default {
   text-align: center;
   color: #2c3e50;
   width: 100%;
-  height: 100%;
-}
-
-#container {
   height: 100%;
 }
 
@@ -170,5 +187,44 @@ export default {
   height: 100%;
   width: 100%;
   animation: enter ease-out .5s;
+}
+
+#header {
+    background-color: #f8f8f8;
+    padding: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    -webkit-user-select: none;
+    -webkit-app-region: drag;
+}
+
+#icon {
+    margin-left: 5px;
+    width: 18px;
+    height: 18px;
+    -webkit-app-region: no-drag;
+}
+
+#button-set {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    -webkit-app-region: no-drag;
+}
+
+.button {
+    padding-top: 3px;
+    height: 30px;
+    width: 50px;
+    transition: .5s;
+}
+.button:hover{
+    background-color: #e3e3e3;
+}
+
+#close:hover{
+    background-color: #F56C6C;
 }
 </style>

@@ -1,7 +1,7 @@
 'use strict'
 
 const path = require('path');
-import { app, protocol, BrowserWindow, ipcMain, dialog } from 'electron'
+import { app, protocol, BrowserWindow, ipcMain, dialog, Tray ,Menu,Notification} from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
@@ -10,9 +10,12 @@ protocol.registerSchemesAsPrivileged([
 ])
 
 async function createWindow() {
+  const icon_path = process.env.WEBPACK_DEV_SERVER_URL ? path.join(__dirname, "/bundled/favicon.ico") : path.join(__dirname, "/favicon.ico");
   const win = new BrowserWindow({
     width: 1100,
     height: 700,
+    icon: icon_path,
+    frame: false,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
@@ -28,11 +31,37 @@ async function createWindow() {
     createProtocol('app')
     win.loadURL('app://./index.html#/')
   }
+  const tray = new Tray(icon_path);
+  const contextMenu = Menu.buildFromTemplate([{
+    label: '退出',
+    role: 'quit',
+    click: () => app.quit()
+  },])
+  tray.setToolTip('LyricFinder');
+  tray.on('right-click', () => { tray.popUpContextMenu(contextMenu) });
+  tray.on('click', () => win.show());
+
+
+  ipcMain.on('close', () => {
+    new Notification({
+      title: "LyricFinder仍在运行",
+      body: "请检查你的系统托盘"
+    }).show()
+    win.hide()
+  });
+  ipcMain.on('hide', () => win.minimize());
+  ipcMain.on('maximize', () => {
+    if (win.isMaximized()) {
+      win.unmaximize();
+    }
+    else win.maximize();
+  });
 
   ipcMain.on("open-tools", (event, name) => {
     let toolWin = new BrowserWindow({
       width: 800,
       height: 900,
+      icon: icon_path,
       webPreferences: {
         nodeIntegration: true,
         preload: path.join(__dirname, "preload.js")
@@ -40,7 +69,7 @@ async function createWindow() {
     })
     toolWin.removeMenu();
     if (process.env.WEBPACK_DEV_SERVER_URL) {
-      toolWin.loadURL(process.env.WEBPACK_DEV_SERVER_URL+`#/tools/${name}`);
+      toolWin.loadURL(process.env.WEBPACK_DEV_SERVER_URL + `#/tools/${name}`);
     } else {
       toolWin.loadURL(`app://./index.html#/tools/${name}`);
     }

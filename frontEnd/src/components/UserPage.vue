@@ -106,8 +106,11 @@ export default {
 
 #user-page {
     align-items: center;
+    width: 100%;
+    height: 100%;
     display: flex;
     flex-direction: column;
+    position: relative;
 }
 
 #bg {

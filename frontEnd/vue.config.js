@@ -14,7 +14,18 @@ module.exports = defineConfig({
   transpileDependencies: true,
   pluginOptions: {
     electronBuilder: {
-       preload: 'src/preload.js'  //make sure you have this line added
+       preload: 'src/preload.js',  //make sure you have this line added
+       builderOptions: {
+        productName: "LyricFinder",
+        appId: 'cast1e.top',
+        win: {
+            "target": [
+                "nsis"
+            ],
+          icon: 'public/favicon.ico',
+          // "requestedExecutionLevel": "requireAdministrator"
+        },
+    },
     }
   }
 })

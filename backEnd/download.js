@@ -4,7 +4,6 @@ const { lyric, song_url_v1, search } = require('./api.js');
 const request = require('request');
 const taglib = require('node-taglib-sharp');
 const axios = require('axios');
-const sharp = require('sharp');
 const { json } = require('express');
 
 taglib.Id3v2Settings.forceDefaultVersion = true;
