@@ -1,5 +1,5 @@
 <template>
-    <div id = "main_content">
+    <div id = "main_content" class="container">
         <h1>欢迎回来！</h1>
         <p style="text-indent: 2rem;">LyricFinder现已经过重构，变得更加易用</p>
         <el-divider />

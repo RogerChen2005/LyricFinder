@@ -2,22 +2,23 @@
     <transition name="drawer-show">
         <div v-if="list_show" class="drawer-container" tabindex="-1" @focus="list_show = false">
             <div id="drawer" class="drawer-body" tabindex="-1">
-                <div style="display: flex;justify-content: space-between;">
+                <div style="display: flex;justify-content: space-between;height: 80px;">
                     <div>
                         <h2>播放列表</h2>
                     </div>
                     <div>
-                        <box-icon style="cursor: pointer;" @click="list_show = false" name='x' size='lg'
-                            animation='tada-hover'></box-icon>
+                        <box-icon color='var(--text-color)' style="cursor: pointer;" @click="list_show = false" name='x'
+                            size='lg' animation='tada-hover'></box-icon>
                     </div>
                 </div>
-                <el-table :data="playlist" style="width: 100%">
+                <el-table :data="playlist" style="width: 100%;height: calc(100% - 80px);border-radius: 7px;">
                     <el-table-column fixed="left" label="" width="30">
                         <template #default="header">
-                            <box-icon name='volume-full' v-if="current_playing===header.$index" color="#303133" size="xs"></box-icon>
+                            <box-icon name='volume-full' v-if="current_playing === header.$index" color='var(--text-color)'
+                                size="xs"></box-icon>
                         </template>
                     </el-table-column>
-                    <el-table-column type="index"/>
+                    <el-table-column type="index" />
                     <el-table-column prop="title" label="名称" />
                     <el-table-column prop="artists" label="歌手" />
                     <el-table-column prop="album" label="专辑" />
@@ -41,38 +42,47 @@
                 @change="changeLong()"></el-slider>
         </div>
         <audio :src="data.music_url" @canplay="showLong" ref="audio" autoplay="" @timeupdate="getCurr"
-            @pause="is_stop = true" @play="is_stop = false"></audio>
+            @pause="is_stop = true" @play="is_stop = false" @ended="ended"></audio>
         <div id="player-ui">
             <div id="left">
                 <img id="album-cover" :src="data.album_img">
-                <div style="text-align: left;">
-                    <p id="title">{{ data.title }}</p>
-                    <p id="artist">{{ data.artists }}</p>
+                <div style="text-align: left;width: 100%;overflow: hidden;">
+                    <p class="hide_text" id="title">{{ data.title }}</p>
+                    <p class="hide_text" id="artist">{{ data.artists }}</p>
                 </div>
             </div>
             <div id="mid">
-                <box-icon name='skip-previous' @click="prev" color='#303133' size='md'></box-icon>
-                <box-icon :name='isPlaying' @click="plays" color='#303133' size='lg'></box-icon>
-                <box-icon name='skip-next' @click="next" color='#303133' size='md'></box-icon>
+                <box-icon name='skip-previous' @click="prev" color='var(--text-color)' size='md'></box-icon>
+                <box-icon :name='isPlaying' @click="plays" color='var(--text-color)' size='lg'></box-icon>
+                <box-icon name='skip-next' @click="next" color='var(--text-color)' size='md'></box-icon>
             </div>
-            <div style="display: flex;flex-direction:row;align-items: center;">
+            <div style="display: flex;flex-direction:row;align-items: center;justify-content: center;">
                 <div style="display: flex;letter-spacing: 1px;">
                     <div style="">{{ toTime(current) }}</div>/
                     <div style="">{{ toTime(data.duration) }}</div>
                 </div>
-                <box-icon name='playlist' type='solid' color='#303133' @click="list_show = true;"
-                    style="margin: 0 10px 0 10px;cursor: pointer;"></box-icon>
-                <box-icon @click="hide" style="margin-right: 10px;cursor: pointer;" name='collapse-alt'></box-icon>
+                <div style="margin: 0 10px 0 10px;cursor: pointer;" class="colbox">
+                    <box-icon v-if="mode < 2" name='repeat' type='solid' color='var(--text-color)'
+                        @click="change_mode"></box-icon>
+                    <box-icon v-if="mode === 2" name='shuffle' type='solid' color='var(--text-color)'
+                        @click="change_mode"></box-icon>
+                    <div v-if="mode === 1">1</div>
+                </div>
+                <box-icon name='playlist' type='solid' color='var(--text-color)' @click="list_show = true;"
+                    style="margin-right: 10px;cursor: pointer;"></box-icon>
+                <box-icon @click="hide" color='var(--text-color)' style="margin-right: 10px;cursor: pointer;"
+                    name='collapse-alt'></box-icon>
             </div>
         </div>
     </div>
     <div ref="show_button" id="show_button" @click="show">
-        <box-icon color="white" type='solid' name='music'></box-icon>
+        <box-icon color="#EEEEEE" type='solid' name='music'></box-icon>
     </div>
 </template>
 
 <script>
 import { ElMessage } from 'element-plus'
+import axios from "axios";
 
 export default {
     name: 'MusicPlayer',
@@ -81,15 +91,19 @@ export default {
     data() {
         return {
             data: {
-                music_url:"",
-                duration:0,
-                album_img:""
+                music_url: "",
+                duration: 0,
+                album_img: "",
+                title: "未播放歌曲",
+                artists: "选择一首歌曲播放"
             },
             current: "100",
             isPlaying: "play",
             list_show: false,
             playlist: [],
-            current_playing: 0
+            current_playing: 0,
+            mode: 0,
+            modes: ['列表循环', '单曲循环', '随机播放']
         }
     },
     methods: {
@@ -102,7 +116,11 @@ export default {
         showLong() { this.data.duration = parseInt(this.$refs.audio.duration); },
         changeLong() {
             let ct = this.current;
-            if (!isNaN(ct)) { this.$refs.audio.currentTime = ct; }
+            if (!isNaN(ct)) {
+                setTimeout(() => {
+                    this.$refs.audio.currentTime = ct;
+                }, 0)
+            }
         },
         plays() {
             if (this.isPlaying == "play") {
@@ -119,47 +137,100 @@ export default {
         },
         change(index) {
             this.isPlaying = "pause";
-            this.data = this.playlist[index];
-            this.current_playing = index;
-            this.show();
-            ElMessage({
-                message: '已开始播放',
-                type: 'success',
+            this.data = {};
+            let quality = "standard";
+            let settings = this.$store.settings;
+            if (settings && settings.quality) {
+                quality = settings.quality;
+            }
+            axios.post("/func", {
+                target: "get_song_url",
+                data: {
+                    id: this.playlist[index].id,
+                    level: quality
+                }
+            }).then((result) => {
+                this.data = this.playlist[index];
+                this.data.music_url = result.data.url;
+                this.current_playing = index;
+                this.show();
             })
         },
-        remove(index){
-            this.playlist.splice(index,1);
-            if(index === this.current_playing){
-                if(this.playlist.length===0){
-                    this.data={
-                        music_url:"",
-                        duration:0,
-                        album_img:""
+        remove(index) {
+            this.playlist.splice(index, 1);
+            if (index === this.current_playing) {
+                if (this.playlist.length === 0) {
+                    this.data = {
+                        music_url: "",
+                        duration: 0,
+                        album_img: ""
                     };
                 }
                 else this.change(index);
             }
-            else if(index < this.current_playing){
-                this.current_playing-=1;
+            else if (index < this.current_playing) {
+                this.current_playing -= 1;
+            }
+        },
+        ended() {
+            switch (this.mode) {
+                default:
+                    this.change((this.current_playing + 1) % this.playlist.length);
+                    break;
+                case 1:
+                    this.change(this.current_playing);
+                    break;
+                case 2: {
+                    let rand = parseInt(Math.random() * (this.playlist.length - 1) + 1);
+                    this.change((this.current_playing + rand) % this.playlist.length);
+                    break;
+                }
             }
         },
         next() {
-            this.change((this.current_playing + 1)%this.playlist.length);
+            if (this.mode === 2) {
+                let rand = parseInt(Math.random() * (this.playlist.length - 1) + 1);
+                console.log(rand, this.playlist.length);
+                this.change((this.current_playing + rand) % this.playlist.length);
+            }
+            else this.change((this.current_playing + 1) % this.playlist.length);
         },
         prev() {
-            let n = this.current_playing-1;
-            let m = this.playlist.length;
-            this.change(((n % m) + m) % m);
+            if (this.mode === 2) {
+                let rand = parseInt(Math.random() * (this.playlist.length - 1) + 1);
+                console.log(rand, this.playlist.length);
+                this.change((this.current_playing + rand) % this.playlist.length);
+            }
+            else {
+                let n = this.current_playing - 1;
+                let m = this.playlist.length;
+                this.change(((n % m) + m) % m);
+            }
         },
         show() {
-            this.$refs.player.style.transform = "translate(-50%,0)";
-            this.$refs.show_button.style.transform = "translateX(10vw)";
+            this.$refs.player.style.display = "block";
+            setTimeout(() => {
+                this.$refs.player.style.transform = "translate(-50%,0)";
+                this.$refs.show_button.style.transform = "translateX(10vw)";
+            }, 0)
         },
         hide() {
             this.$refs.player.style.transform = "translate(-50%,30vh)";
             this.$refs.show_button.style.transform = "translateX(0)";
+            setTimeout(() => this.$refs.player.style.display = "none", 500);
         },
-    }
+        change_mode() {
+            this.mode = (this.mode + 1) % 3;
+            ElMessage({
+                type: 'info',
+                message: this.modes[this.mode]
+            })
+        },
+        listen_all(queue) {
+            this.playlist = queue;
+            this.change(0);
+        }
+    },
 }
 </script>
 
@@ -175,8 +246,13 @@ export default {
     bottom: 10%;
     left: 50%;
     transform: translate(-50%, 30vh);
-    transition: 1s cubic-bezier(0.52, 0.02, 0.48, 1);
+    transition: .7s cubic-bezier(0.52, 0.02, 0.48, 1);
     z-index: 2000;
+    display: none;
+}
+
+html.dark #player {
+    background-color: rgba(34, 34, 34, 0.724);
 }
 
 #player #player_icon {
@@ -202,7 +278,8 @@ export default {
 }
 
 #player-ui #album-cover {
-    height: 70%;
+    height: 55px;
+    width: 55px;
     border-radius: 5px;
     margin-left: 10px;
 }
@@ -246,13 +323,15 @@ export default {
     display: flex;
     flex-direction: row;
     align-items: center;
-    max-width: 20%;
+    min-width: 23%;
+    max-width: 25%;
 }
 
 #player-ui #mid {
     display: flex;
     flex-direction: row;
     align-items: center;
+    align-self: center;
 }
 
 #player-ui #mid>* {
@@ -268,12 +347,15 @@ export default {
 
 .drawer-container {
     position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
     z-index: 2002;
     backdrop-filter: blur(10px);
-    transition: all 0.5s ease-in-out;
-    background: rgba(158, 158, 158, 0.1);
+    transition: all .5s ease-in-out;
+    /* background: rgba(158, 158, 158, 0.1); */
+    background: transparent;
 }
 
 .drawer-body {
@@ -284,13 +366,13 @@ export default {
     height: 75%;
     border-radius: 5px;
     top: 5%;
-    transition: 0.5s ease-in-out;
-    background-color: white;
+    transition: .5s cubic-bezier(.25, .1, .3, 1.5);
+    background-color: var(--bg-color);
 }
 
 .drawer-show-enter-from,
 .drawer-show-leave-to {
-    background: rgba(255, 255, 255, 0);
+    background: transparent;
     backdrop-filter: blur(0px);
 }
 
@@ -301,7 +383,7 @@ export default {
 
 .drawer-show-enter-to,
 .drawer-show-leave-from {
-    background: rgba(245, 245, 245, 0.1);
+    background: transparent;
     backdrop-filter: blur(10px);
 }
 
@@ -324,5 +406,4 @@ export default {
     cursor: pointer;
     transition: 1s;
     z-index: 2001;
-}
-</style>
+}</style>

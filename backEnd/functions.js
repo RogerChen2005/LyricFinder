@@ -1,7 +1,9 @@
 const { search, song_url_v1, song_detail, login_qr_key, login_qr_create, login_qr_check, user_account, user_playlist, playlist_track_all } = require("./api.js")
 const { download, get_folder_songs } = require('./download.js')
+const fs = require('fs');
+const cookie = String(fs.readFileSync("./cookies/cookie.txt"));
 
-async function search_query(query) {
+async function search_query(res,query) {
     let data = [];
     let result = await search({
         keywords: query.key,
@@ -26,33 +28,34 @@ async function search_query(query) {
     })
 }
 
-async function get_song_detail(query) {
+async function get_song_detail(res,query) {
     let result = await song_detail({
         ids: query.id
     });
-    let res = result.body.songs[0]
+    let ress = result.body.songs[0]
     let artists = [];
-    for (i of res.ar) {
+    for (i of ress.ar) {
         artists.push(i.name);
     }
     return JSON.stringify({
-        id: res.id,
-        title: res.name,
+        id: ress.id,
+        title: ress.name,
         artists: artists.join(','),
-        album: res.al.name,
-        album_img: res.al.picUrl
+        album: ress.al.name,
+        album_img: ress.al.picUrl
     });
 }
 
-async function get_song_url(query) {
+async function get_song_url(res,query) {
     let result = await song_url_v1({
         id: query.id,
-        level: query.level
+        level: query.level,
+        cookie:cookie
     });
     return JSON.stringify(result.body.data[0]);
 }
 
-async function generate_qr_code(query) {
+async function generate_qr_code(res,query) {
     let key = await login_qr_key();
     let result = await login_qr_create({
         "key": key.body.data.unikey,
@@ -64,7 +67,7 @@ async function generate_qr_code(query) {
     });
 }
 
-async function qr_check(query) {
+async function qr_check(res,query) {
     let result = await login_qr_check({
         "key": query.key
     });
@@ -74,22 +77,29 @@ async function qr_check(query) {
     });
 }
 
-async function user_inf(query) {
+async function user_inf(res,query) {
     let result = await user_account({
         cookie: query.cookie
     });
-    return JSON.stringify({
-        userid: result.body.profile.userId,
-        nickname: result.body.profile.nickname,
-        avatarUrl: result.body.profile.avatarUrl,
-        backgroundUrl: result.body.profile.backgroundUrl,
-        signature: result.body.profile.signature,
-        isvip: result.body.account.paidFee,
-        status: result.body.account.status
-    });
+    if(result.body.profile){
+        res.status(200);
+        return JSON.stringify({
+            userid: result.body.profile.userId,
+            nickname: result.body.profile.nickname,
+            avatarUrl: result.body.profile.avatarUrl,
+            backgroundUrl: result.body.profile.backgroundUrl,
+            signature: result.body.profile.signature,
+            isvip: result.body.account.paidFee,
+            status: result.body.account.status
+        });
+    }
+    else{
+        res.status(404);
+        return "";
+    }
 }
 
-async function get_playlist(query) {
+async function get_playlist(res,query) {
     let result = [];
     for (let offset = 0; ; offset += 30) {
         let value = await user_playlist({
@@ -114,7 +124,7 @@ async function get_playlist(query) {
     });
 }
 
-async function get_list_song(query) {
+async function get_list_song(res,query) {
     let data = [];
     let result = await playlist_track_all({
         id: query.id,
@@ -135,11 +145,6 @@ async function get_list_song(query) {
     })
 }
 
-async function download_query(query) {
-    download(query.queue, query.options);
-    return "{}";
-}
-
 module.exports = {
     "search_query": search_query,
     "get_song_url": get_song_url,
@@ -149,6 +154,5 @@ module.exports = {
     "user_inf": user_inf,
     "get_playlist": get_playlist,
     "get_list_song": get_list_song,
-    "download": download_query,
     "get_folder_songs": get_folder_songs
 }

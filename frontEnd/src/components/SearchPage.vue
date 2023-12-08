@@ -1,5 +1,5 @@
 <template>
-    <el-container id="main_content">
+    <el-container id="main_content" class="container">
         <el-main>
             <div id="search">
                 <el-input @keyup="key_check" v-model="search" placeholder="请输入内容"> </el-input>
@@ -30,8 +30,8 @@
                     <el-col :span="4">
                         <div class="hide_text" style="font-size: 14px;">{{ i.album }}</div>
                     </el-col>
-                    <el-button v-on:click="listen_temporary(i)" style="margin-left: 20px;">预览</el-button>
-                    <el-button v-on:click="add(i)" type="primary" style="margin-left: 20px;">添加</el-button>
+                    <el-button v-on:click="listen_temporary(i)" style="margin-left: 20px;">播放</el-button>
+                    <el-button v-on:click="add(i)" type="primary" style="margin-left: 20px;">下载</el-button>
                 </el-card>
             </div>
         </el-main>
@@ -50,10 +50,6 @@ axios.defaults.withCredentials = true;
 
 export default {
     name: 'SearchPage',
-    props: {
-        trylisten: Function,
-        add_item: Function
-    },
     data() {
         return {
             count: 0,
@@ -71,12 +67,19 @@ export default {
                 }
             });
         },
-        add(i) {
-            this.add_item(i);
+        async add(i) {
+            let result = await axios.post("/func", {
+                target: "get_song_detail",
+                data: {
+                    id: "" + i.id,
+                }
+            })
+            i.album_img = result.data.album_img;
+            this.$store.state.queue.add(i);
         },
         search_query(index, callback) {
             this.search_loading = true;
-            axios.post("http://localhost:3030/func", {
+            axios.post("/func", {
                 target: "search_query",
                 data: {
                     key: this.search,
@@ -95,22 +98,14 @@ export default {
         },
         async listen_temporary(i) {
             let data = i;
-            let result = await axios.post("http://localhost:3030/func", {
-                target: "get_song_url",
-                data: {
-                    id: i.id,
-                    level: "standard"
-                }
-            })
-            data.music_url = result.data.url;
-            result = await axios.post("http://localhost:3030/func", {
+            let result = await axios.post("/func", {
                 target: "get_song_detail",
                 data: {
                     id: "" + i.id,
                 }
             })
             data.album_img = result.data.album_img;
-            this.trylisten(data);
+            this.$store.state.trylisten(data);
         },
         key_check(e) {
             if (e.keyCode === 13) {

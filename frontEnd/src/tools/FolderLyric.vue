@@ -73,7 +73,6 @@ export default {
                 index: 0,
                 loading: false
             },
-            socket: undefined,
             task_remain: 0
         }
     },

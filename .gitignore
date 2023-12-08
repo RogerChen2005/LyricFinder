@@ -1,6 +1,9 @@
 /NeteaseCloudMusicApi
 **/node_modules
-**/module
+**/modules
+**/temp
+**/cookies
+**/static
 backend/dist/
 bundled/
 dest/

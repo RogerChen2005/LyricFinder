@@ -1,34 +1,30 @@
 <template>
-    <div id="main_content">
-        <div v-if="!isLogin" style="text-align: center;">
-            <el-empty description="未登录" />
-            <el-button type="primary" @click="login(() => {
-                isLogin = true;
-                refresh();
-            })">登陆</el-button>
-        </div>
-        <div v-if="isLogin" id="user-page">
-            <div id="op">
-                <el-button @click="user_inf" type="primary"><box-icon color="white"
-                        name='refresh'></box-icon>刷新登录</el-button>
-
-                <el-popconfirm @confirm="exit" title="确认退出登录？">
-                    <template #reference>
-                        <el-button  type="danger"><box-icon color="white"
-                                name='exit'></box-icon>退出登录</el-button>
-                    </template>
-                </el-popconfirm>
+        <div id="main_content" class="container">
+            <div v-if="!isLogin" style="text-align: center;">
+                <el-empty description="未登录" />
+                <el-button type="primary" @click="$router.push('/login')">登陆</el-button>
             </div>
-            <img id="bg" :src="bgurl">
-            <div id="mask"></div>
-            <el-avatar id="av" :size="150">
-                <img :src="avurl" />
-            </el-avatar>
-            <el-text id="name">{{ name }} <img v-if="isvip" style="width: 50px;vertical-align: middle;"
-                    :src="require('@/assets/vip.png')"></el-text>
-            <el-text id="sg">{{ sig }}</el-text>
+            <div v-if="isLogin" id="user-page">
+                <div id="op">
+                    <el-button @click="user_inf" type="primary"><box-icon color="white"
+                            name='refresh'></box-icon>刷新登录</el-button>
+
+                    <el-popconfirm @confirm="exit" title="确认退出登录？">
+                        <template #reference>
+                            <el-button type="danger"><box-icon color="white" name='exit'></box-icon>退出登录</el-button>
+                        </template>
+                    </el-popconfirm>
+                </div>
+                <img id="bg" :src="bgurl">
+                <div id="mask"></div>
+                <el-avatar id="av" :size="150">
+                    <img :src="avurl" />
+                </el-avatar>
+                <el-text id="name">{{ name }} <img v-if="isvip" style="width: 50px;vertical-align: middle;"
+                        :src="require('@/assets/vip.png')"></el-text>
+                <el-text id="sg">{{ sig }}</el-text>
+            </div>
         </div>
-    </div>
 </template>
 <script>
 import axios from 'axios';
@@ -87,6 +83,7 @@ export default {
         },
         exit() {
             localStorage.removeItem('profile');
+            localStorage.removeItem('list');
             this.isLogin = false;
             return;
         }
@@ -125,6 +122,10 @@ export default {
     height: 100%;
     z-index: -1;
     background: linear-gradient(#FFFFFF00, #FFFFFFAA 25%, #FFFFFFFF 60%);
+}
+
+html.dark #mask{
+    background: linear-gradient(#00000000, #2b2b2baa 25%, #2b2b2b 60%);
 }
 
 #av {

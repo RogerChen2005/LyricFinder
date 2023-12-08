@@ -4,32 +4,25 @@ const { lyric, song_url_v1, search } = require('./api.js');
 const request = require('request');
 const taglib = require('node-taglib-sharp');
 const axios = require('axios');
-const { json } = require('express');
+const cookie = String(fs.readFileSync("./cookies/cookie.txt"));
+const temp_path = "./temp";
 
 taglib.Id3v2Settings.forceDefaultVersion = true;
 taglib.Id3v2Settings.defaultVersion = 3;
 
-function set_download_path(options) {
-    if (!fs.existsSync(options.path)) {
-        fs.mkdirSync(options.path, { recursive: true });
-    }
-    if (options.classify) {
-        for (i of ['songs', 'cover', 'lyric']) {
-            if (!fs.existsSync(path.join(options.path, i))) {
-                fs.mkdirSync(path.join(options.path, i));
-            }
-        }
+module.exports.set_download_path = function () {
+    if (!fs.existsSync(temp_path)) {
+        fs.mkdirSync(temp_path, { recursive: true });
     }
 }
 
-function create_file_name(query, options, type, ext) {
-    if (options.use_origin_name) return path.join(options.path, query.origin_name + ext);
+function create_file_name(query, options, ext) {
+    if (options.use_origin_name) return path.join(temp_path, query.origin_name + ext);
     let filename = options.mode ? `${query.title} - ${query.artists}` : `${query.artists} - ${query.title}`;
-    filename = options.classify === true ? path.join(type, filename + ext) : filename + ext;
     filename = filename.replace(/\//g, "_");
     filename = filename.replace(/\*/g, "＊");
     filename = filename.replace(/:/g, "：");
-    return path.join(options.path, filename);
+    return `${filename}.${ext}`;
 }
 
 function comp(t1, t2) {
@@ -42,23 +35,17 @@ function comp(t1, t2) {
     else return a1[0] < a2[0];
 }
 
-let count = () => { };
-module.exports.set_socket = function (func) {
-    count = func;
-}
-
-async function lyric_download(queue, options) {
-    for (let index = 0; index < queue.length; index++) {
-        let query = queue[index];
-        let result = await lyric({
-            id: query.id
-        })
-        let save_path = create_file_name(query, options, 'lyric', '.lrc');
-        if (!result.body.tlyric || !options.tlyric) {
-            fs.writeFileSync(save_path, result.body.lrc.lyric);
-            count('count', index);
-        }
-        else {
+module.exports.lyric_download = async function (data, res) {
+    let options = data.options;
+    let query = data.query;
+    let result = await lyric({
+        id: query.id
+    })
+    let save_name = create_file_name(query, options, 'lrc');
+    let save_path = path.join(temp_path, save_name);
+    fs.writeFileSync(save_path, JSON.stringify(result.body));
+    try {
+        if (options.tlyric && result.body.tlyric && result.body.tlyric.lyric) {
             let res = [];
             let lyric = result.body.lrc.lyric.split('\n');
             let tlyric = result.body.tlyric.lyric.split('\n');
@@ -80,35 +67,40 @@ async function lyric_download(queue, options) {
                 }
             }
             fs.writeFileSync(save_path, res.join('\n'));
-            count('count', index);
         }
-
+        else fs.writeFileSync(save_path, result.body.lrc.lyric);
+        res.status(200);
+        return JSON.stringify({
+            filename: save_name
+        });
+    }
+    catch (e) {
+        console.log(e);
+        res.status(404).end();
     }
 }
 
-async function music_download(queue, options) {
-    for (let index = 0; index < queue.length; index++) {
-        let query = queue[index];
-        let result = await song_url_v1({
-            id: query.id,
-            cookie: options.cookie,
-            level: options.level
-        })
-        let url = result.body.data[0].url;
-        let type = '.' + result.body.data[0].type;
-        let save_path = create_file_name(query, options, 'songs', type);
-        let stream = fs.createWriteStream(save_path);
-        request(url).pipe(stream);
+module.exports.music_download = async function (data, res) {
+    let options = data.options;
+    let query = data.query;
+    let result = await song_url_v1({
+        id: query.id,
+        cookie: cookie,
+        level: options.level
+    })
+    let url = result.body.data[0].url;
+    let type = result.body.data[0].type;
+    let save_name = create_file_name(query, options, type);
+    let save_path = path.join(temp_path, save_name);
+    let stream = fs.createWriteStream(save_path);
+    request(url).pipe(stream);
+    return new Promise((resolve) => {
         stream.on("finish", () => {
             axios({
                 url: query.album_img,
                 method: 'GET',
                 responseType: 'arraybuffer'
             }).then(async (body) => {
-                if (options.cover) {
-                    fs.writeFileSync(path.join(create_file_name(query, options, 'cover', '.jpg')), body.data);
-                    count('count', index);
-                }
                 let cover = {
                     data: taglib.ByteVector.fromByteArray(Buffer.from(body.data)),
                     mimeType: 'image/jpeg',
@@ -121,13 +113,16 @@ async function music_download(queue, options) {
                 dest.tag.performers = query.artists.split(',');
                 dest.save();
                 dest.dispose();
-                count('count', index);
+                res.status(200);
+                resolve(JSON.stringify({
+                    filename: save_name
+                }));
             });
         });
-    }
+    })
 }
-
-function download_cover_only(queue, options) {
+/*
+function cover_download(queue, options) {
     for (let index = 0; index < queue.length; index++) {
         let query = queue[index];
         axios({
@@ -152,7 +147,7 @@ async function fileDisplay(filePath) {
                     if (stats.isFile()) {
                         let ext = filename.substring(filename.lastIndexOf(".") + 1, filename.length);
                         if (['flac', 'wav', 'ape', 'mp3'].includes(ext)) {
-                            if(!fs.existsSync(path.join(filePath,filename.substring(0, filename.lastIndexOf("."))+".lrc"))){
+                            if (!fs.existsSync(path.join(filePath, filename.substring(0, filename.lastIndexOf(".")) + ".lrc"))) {
                                 file_list.push(filename);
                             }
                         }
@@ -163,17 +158,37 @@ async function fileDisplay(filePath) {
         });
     })
 }
+*/
 
-module.exports.get_folder_songs = async function (query) {
+module.exports.get_file = function (body, res) {
+    let filepath = path.join(temp_path, body.filename);
+    if (fs.existsSync(filepath)) {
+        const filesize = fs.statSync(filepath).size
+        res.writeHead(200, {
+            'Content-Type': 'application/octet-stream',
+            'content-length': filesize
+        })
+        let readStream = fs.createReadStream(filepath);
+        readStream.pipe(res);
+        readStream.on('close', () => {
+            fs.rmSync(filepath);
+            res.end()
+        });
+    }
+    else res.status(404).end();
+}
+
+/*
+module.exports.get_folder_songs = async function (res, query) {
     let filePaths = await fileDisplay(query.path);
     let queue = [];
     for (let filePath of filePaths) {
         let origin_name = filePath.substring(0, filePath.lastIndexOf("."));
         let metadata = taglib.File.createFromPath(path.join(query.path, filePath));
         let key = '';
-        if(metadata.tag.title) key+=metadata.tag.title+" ";
-        if(metadata.tag.performers) key+=metadata.tag.performers[0];
-        if(!key) key = origin_name;
+        if (metadata.tag.title) key += metadata.tag.title + " ";
+        if (metadata.tag.performers) key += metadata.tag.performers[0];
+        if (!key) key = origin_name;
         let result = await search({
             keywords: key,
             limit: 5
@@ -197,24 +212,12 @@ module.exports.get_folder_songs = async function (query) {
                 artists: artists.join(','),
                 album: songs[index].album.name,
                 origin_name: filePath.substring(0, filePath.lastIndexOf(".")),
-                search_key:key
+                search_key: key
             })
         }
     }
     return JSON.stringify({
-        queue:queue
+        queue: queue
     });
 }
-
-module.exports.download = async function (queue, options) {
-    set_download_path(options);
-    if (options.song) {
-        music_download(queue, options);
-    }
-    else if (options.cover) {
-        download_cover_only(queue, options);
-    }
-    if (options.lyric) {
-        lyric_download(queue, options);
-    }
-}
+*/
