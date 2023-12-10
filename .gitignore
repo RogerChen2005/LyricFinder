@@ -5,6 +5,7 @@
 **/cookies
 **/static
 **/cert
+**/test
 backend/dist/
 bundled/
 dest/
