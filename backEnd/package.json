@@ -6,9 +6,7 @@
     "pac-proxy-agent": "^6.0.3",
     "qrcode": "^1.5.3",
     "request": "^2.88.2",
-    "sharp": "^0.32.4",
     "tunnel": "^0.0.6",
-    "ws": "^8.13.0",
     "xml2js": "^0.6.2"
   },
   "devDependencies": {

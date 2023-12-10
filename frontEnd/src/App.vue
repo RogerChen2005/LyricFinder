@@ -66,6 +66,7 @@ html {
 html.dark {
   --bg-color: #2a2a2a;
   --text-color: #c0c0c0;
+  --el-bg-color:transparent;
 }
 
 .rowbox {

@@ -4,6 +4,7 @@
 **/temp
 **/cookies
 **/static
+**/cert
 backend/dist/
 bundled/
 dest/
