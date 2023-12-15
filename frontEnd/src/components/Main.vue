@@ -79,10 +79,17 @@ export default {
 </script>
 
 <style>
+.footer {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    justify-content: center;
+}
+
 .songlist_card {
     cursor: pointer;
     width: 170px;
-    height: 210px;
+    height: 220px;
     font-size: 14px;
     white-space: nowrap;
     overflow: hidden;

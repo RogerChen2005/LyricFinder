@@ -45,7 +45,7 @@
             @pause="is_stop = true" @play="is_stop = false" @ended="ended"></audio>
         <div id="player-ui">
             <div id="left">
-                <img id="album-cover" :src="data.album_img">
+                <img id="album-cover" :src="data.album.cover">
                 <div style="text-align: left;width: 100%;overflow: hidden;">
                     <p class="hide_text" id="title">{{ data.title }}</p>
                     <p class="hide_text" id="artist">{{ data.artists }}</p>

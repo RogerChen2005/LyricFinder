@@ -14,8 +14,18 @@
             <el-table :data="list" style="width: 100%;">
                 <el-table-column type="index" />
                 <el-table-column prop="title" label="名称" />
-                <el-table-column prop="artists" label="歌手" />
-                <el-table-column prop="album" label="专辑" />
+                <el-table-column prop="artists" label="歌手">
+                    <template #default="scope">
+                        <div v-for="i in scope.row.artists" :key="i.id">
+                            <el-link @click="display_artist(i)">{{ i.name }}</el-link>
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="album" label="专辑">
+                    <template #default="scope">
+                        <el-link @click="display_album(scope.row)">{{ scope.row.album.name }}</el-link>
+                    </template>
+                </el-table-column>
                 <el-table-column fixed="right" label="操作">
                     <template #default="scope">
                         <div style="display: flex;flex-direction: row;">
@@ -43,6 +53,7 @@ export default {
         return {
             id: 0,
             count: 0,
+            index_start:0,
             list: [],
             list_name: "",
             visible: false,
@@ -61,6 +72,7 @@ export default {
                     offset: (index - 1) * 30
                 }
             }).then((res) => {
+                this.index_start = (index)*30,
                 this.list = res.data.songs;
                 this.loading = false;
             })
@@ -86,7 +98,13 @@ export default {
                 console.log(this.songlist);
                 this.handle_drawer_page_change(1);
             })
-        }
+        },
+        display_album(item) {
+            this.$router.push(`/album?id=${item.id}`);
+        },
+        display_artist(item) {
+            this.$router.push(`/artist?id=${item.id}`);
+        },
     },
     created() {
         this.id = this.$route.query.id;

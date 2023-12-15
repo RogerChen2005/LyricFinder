@@ -133,10 +133,4 @@ div {
     margin-bottom: 10px;
 }
 
-.footer {
-    display: flex;
-    align-items: center;
-    flex-direction: row;
-    justify-content: center;
-}
 </style>

@@ -32,74 +32,17 @@
 </template>
 
 <script>
-import { ElNotification } from 'element-plus'
 
 export default {
     name: 'DownloadPage',
     data() {
         return {
-            quality: [
-                {
-                    label: "标准",
-                    value: "standard",
-                    vip: false
-                },
-                {
-                    label: "极高",
-                    value: "exhigh",
-                    vip: true
-                },
-                {
-                    label: "无损",
-                    value: "lossless",
-                    vip: true
-                },
-                {
-                    label: "Hi-Res",
-                    value: "hires",
-                    vip: true
-                },
-                {
-                    label: "高清环绕声",
-                    value: "jyeffect",
-                    vip: true
-                },
-                {
-                    label: "沉浸环绕声",
-                    value: "sky",
-                    vip: true
-                },
-                {
-                    label: "超清母带",
-                    value: "jymaster",
-                    vip: true
-                },
-            ],
-            bitrate: "lossless",
-            song: true,
-            lyric: true,
-            cover: false,
-            task_remain: 0,
             queue:[]
         }
     },
     methods: {
         remove_row(index) {
             this.$store.state.queue.del(index);
-        },
-        count(message) {
-            let index = JSON.parse(message.data).message;
-            this.queue[index].current += 1;
-            this.task_remain -= 1;
-            if (this.task_remain === 0) {
-                this.queue.splice(0);
-                this.socket.close();
-                ElNotification({
-                    title: '成功',
-                    message: '下载完成',
-                    type: 'success',
-                });
-            }
         },
         download(){
             this.$store.state.queue.download();

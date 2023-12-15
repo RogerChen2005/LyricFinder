@@ -1,5 +1,5 @@
 import { ElMessage,ElNotification } from "element-plus";
-const default_setting = { "mode": 0, "tlyric": true, "level": "standard" }
+const default_setting = { "mode": 0,"lyric":true,"tlyric": true, "level": "exhigh" }
 import axios from 'axios'
 export class Queue {
     constructor() {

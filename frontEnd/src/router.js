@@ -10,11 +10,13 @@ const search_all = () =>import('./components/search/search_all.vue');
 const search_song = () =>import('./components/search/search_song.vue');
 const search_album = () =>import('./components/search/search_album.vue');
 const search_list = () =>import('./components/search/search_list.vue');
+const search_artist = () =>import('./components/search/search_artist.vue');
 const user = () => import('./components/UserPage.vue');
 const download = () => import('./components/DownloadPage.vue');
 const login = () => import('./components/UserLogin.vue');
 const album = () => import('./components/display/album.vue');
 const playlist = () => import('./components/display/playlist.vue');
+const artist = () => import('./components/display/artist.vue');
 
 export default createRouter({
     history: createWebHashHistory(),
@@ -29,11 +31,13 @@ export default createRouter({
                     {path:'song',component:search_song},
                     {path:'album',component:search_album},
                     {path:'list',component:search_list},
+                    {path:'artist',component:search_artist},
                 ]},
                 { path: 'user', component: user },
                 { path: 'download', component: download },
                 { path: 'album',component:album },
                 { path: 'playlist',component:playlist },
+                { path: 'artist',component:artist },
             ]
         },
         { path: '/tools/:name', component: ToolsMain },
