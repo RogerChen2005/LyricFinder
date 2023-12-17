@@ -5,8 +5,8 @@
 
 <script>
 import MusicPlayer from './components/MusicPlayer.vue'
-import {Queue} from './js/queue.js'
-const default_settings = {"mode":0,"lyric":true,"tlyric":true,"quality":"exhigh","level":"exhigh"};
+import { Queue } from './js/queue.js'
+const default_settings = { "mode": 0, "lyric": true, "tlyric": true, "quality": "exhigh", "level": "exhigh" };
 
 export default {
     name: "App",
@@ -17,17 +17,21 @@ export default {
         trylisten(data) {
             this.$refs.player.init(data);
         },
-        listen_all(queue){
+        listen_all(queue) {
             this.$refs.player.listen_all(queue);
         }
     },
     created() {
-        this.$store.state.trylisten = this.trylisten;
-        this.$store.state.listen_all = this.listen_all;
-        this.$store.state.queue = new Queue();
+        let profile = JSON.parse(localStorage.getItem('profile'));
         this.$store.state.classManager.init_darkmode();
-        let settings = JSON.parse(localStorage.getItem("settings"));
-        this.$store.state.settings = settings?settings:default_settings;
+        if (profile) {
+            this.$store.state.trylisten = this.trylisten;
+            this.$store.state.listen_all = this.listen_all;
+            this.$store.state.queue = new Queue();
+            let settings = JSON.parse(localStorage.getItem("settings"));
+            this.$store.state.settings = settings ? settings : default_settings;
+        }
+        else this.$router.push('/login');
     }
 }
 </script>
@@ -53,20 +57,22 @@ export default {
     text-overflow: ellipsis;
 }
 
-body{
+body {
     background-color: var(--bg-color);
     color: var(--text-color);
+    --el-bg-color: transparent;
+    --el-fill-color-blank:transparent;
 }
 
 html {
-  --bg-color: #f2f2f2;
-  --text-color: #464646;
+    --bg-color: #fbfbfb;
+    --text-color: #464646;
 }
 
 html.dark {
-  --bg-color: #2a2a2a;
-  --text-color: #c0c0c0;
-  --el-bg-color:transparent;
+    --bg-color: #2a2a2a;
+    --text-color: #c0c0c0;
+    --el-bg-color: transparent;
 }
 
 .rowbox {

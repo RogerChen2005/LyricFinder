@@ -95,7 +95,6 @@ export default {
                 }
             }).then((res)=>{
                 this.songlist = res.data;
-                console.log(this.songlist);
                 this.handle_drawer_page_change(1);
             })
         },

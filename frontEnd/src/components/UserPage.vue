@@ -85,6 +85,7 @@ export default {
             localStorage.removeItem('profile');
             localStorage.removeItem('list');
             this.isLogin = false;
+            this.$router.push('/login');
             return;
         }
     },

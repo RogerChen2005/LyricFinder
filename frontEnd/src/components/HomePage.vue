@@ -4,10 +4,14 @@
         <p style="text-indent: 2rem;">Lyric Finder 现已经过重构，变得更加易用</p>
         <el-divider />
         <h3>更新日志：</h3>
+        <p style="text-indent: 1rem;">2023.12.17</p>
+        <p style="text-indent: 2rem;">更新了对系统播放菜单的支持(Media Session API),更新了一键跳转(搜索框内输入分享链接)</p>
+        <p style="text-indent: 1rem;">2023.12.15</p>
+        <p style="text-indent: 2rem;">增加了歌手页面，改进了专辑页面，更新了链接的跳转（歌手，专辑）</p>
+        <p style="text-indent: 1rem;">2023.12.10</p>
+        <p style="text-indent: 2rem;">重构项目的结束, Full support for web API</p>
         <p style="text-indent: 1rem;">2023.6.20</p>
         <p style="text-indent: 2rem;">重构项目的开始</p>
-        <p style="text-indent: 1rem;">2023.12.10</p>
-        <p style="text-indent: 2rem;">重构项目的结束</p>
         <el-divider />
         <h1>我们保证不会收集您的个人信息</h1>
         <p style="text-indent: 2rem;">所有的您的个人信息均存储在您的浏览器中，并不会发送至服务器</p>

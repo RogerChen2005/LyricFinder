@@ -8,9 +8,16 @@ export class Queue {
     }
     add(item) {
         this.total += 1;
-        item.status = 0;
-        item.progress = 0;
-        this.queue.push(item);
+        let data = {
+            id:item.id,
+            title:item.title,
+            album:item.album.name,
+            artists:item.artists[0].name,
+            album_img:item.album.cover,
+            status:0,
+            progress:0
+        }
+        this.queue.push(data);
         ElMessage({
             message: '添加成功',
             type: 'success',

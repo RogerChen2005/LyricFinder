@@ -97,6 +97,7 @@ export default {
         },
         init() {
             this.loading = true;
+            this.detail={};
             axios.post('/func', {
                 target: "artist_info",
                 data: {
@@ -128,10 +129,16 @@ export default {
             this.$router.push(`/artist?id=${item.id}`);
         },
     },
+    watch: {
+        '$route': function () {
+            this.id = Number(this.$route.query.id);
+            if (this.id) this.init();
+        }
+    },
     created() {
         this.id = Number(this.$route.query.id);
         if (this.id) this.init();
-    }
+    },
 }
 </script>
 

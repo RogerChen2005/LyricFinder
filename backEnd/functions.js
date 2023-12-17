@@ -1,21 +1,21 @@
-const { artist_album,artists,search, song_url_v1, song_detail, login_qr_key, login_qr_create, login_qr_check, user_account, user_playlist, playlist_track_all, playlist_detail, album } = require("./api.js")
+const { artist_album, artists, search, song_url_v1, song_detail, login_qr_key, login_qr_create, login_qr_check, user_account, user_playlist, playlist_track_all, playlist_detail, album } = require("./api.js")
 const { download, get_folder_songs } = require('./download.js')
 const fs = require('fs');
 const cookie = String(fs.readFileSync("./cookies/cookie.txt"));
 
-function artists_conv(obj){
+function artists_conv(obj) {
     let data = [];
-    for(let i of obj){
+    for (let i of obj) {
         data.push({
-            name:i.name,
-            id:i.id
+            name: i.name,
+            id: i.id
         });
     }
     return data;
 }
 
 async function search_all(res, query) {
-    let songs = [], albums = [], lists = [],artists=[];
+    let songs = [], albums = [], lists = [], artists = [];
     let result = await search({
         keywords: query.key,
         type: 1018
@@ -27,8 +27,8 @@ async function search_all(res, query) {
                 id: i.id,
                 title: i.name,
                 album: {
-                    name:i.al.name,
-                    id:i.al.id
+                    name: i.al.name,
+                    id: i.al.id
                 },
                 artists: artists_conv(i.ar),
             });
@@ -157,7 +157,7 @@ async function search_artist(res, query) {
         data.push({
             id: i.id,
             name: i.name,
-            img:i.img1v1Url,
+            img: i.img1v1Url,
         });
     }
     res.status(200);
@@ -171,18 +171,17 @@ async function get_song_detail(res, query) {
     let result = await song_detail({
         ids: query.id
     });
-    let ress = result.body.songs[0]
-    let artists = [];
-    for (i of ress.ar) {
-        artists.push(i.name);
-    }
+    let data = result.body.songs[0]
     res.status(200);
     return JSON.stringify({
-        id: ress.id,
-        title: ress.name,
-        artists: artists.join(','),
-        album: ress.al.name,
-        album_img: ress.al.picUrl
+        id: data.id,
+        title: data.name,
+        artists: artists_conv(data.ar),
+        album:{
+            id:data.al.id,
+            name:data.al.name,
+            cover:data.al.picUrl
+        } 
     });
 }
 
@@ -213,11 +212,17 @@ async function qr_check(res, query) {
     let result = await login_qr_check({
         "key": query.key
     });
-    res.status(200);
-    return JSON.stringify({
-        "code": result.body.code,
-        "cookie": result.body.cookie
-    });
+    if (result) {
+        res.status(200);
+        return JSON.stringify({
+            "code": result.body.code,
+            "cookie": result.body.cookie
+        });
+    }
+    else{
+        res.status(500);
+        return'';
+    }
 }
 
 async function user_inf(res, query) {
@@ -281,9 +286,9 @@ async function get_list_song(res, query) {
             id: i.id,
             artists: artists_conv(i.ar),
             album: {
-                name:i.al.name,
-                id:i.al.id,
-                cover:i.al.picUrl
+                name: i.al.name,
+                id: i.al.id,
+                cover: i.al.picUrl
             },
         });
     }
@@ -324,10 +329,10 @@ async function get_album(res, query) {
         let data = [];
         for (let i of result.body.songs) {
             let artists = [];
-            for(let j of i.ar){
+            for (let j of i.ar) {
                 artists.push({
-                    name:j.name,
-                    id:j.id,
+                    name: j.name,
+                    id: j.id,
                 })
             }
             data.push({
@@ -335,9 +340,9 @@ async function get_album(res, query) {
                 id: i.id,
                 artists: artists_conv(i.ar),
                 album: {
-                    name:i.al.name,
-                    id:i.al.id,
-                    cover:i.al.picUrl
+                    name: i.al.name,
+                    id: i.al.id,
+                    cover: i.al.picUrl
                 },
             });
         }
@@ -358,45 +363,45 @@ async function get_album(res, query) {
     }
 }
 
-async function artist_info(res,query){
-    try{
+async function artist_info(res, query) {
+    try {
         let result = await artists({
-            id:query.id
+            id: query.id
         });
         let body = result.body;
         let artist = body.artist;
         let data = [];
-        for(let i of body.hotSongs){
+        for (let i of body.hotSongs) {
             data.push({
-                id:i.id,
-                title:i.name,
-                album:{
-                    name:i.al.name,
-                    id:i.al.id
+                id: i.id,
+                title: i.name,
+                album: {
+                    name: i.al.name,
+                    id: i.al.id
                 },
-                artists:artists_conv(i.ar),
+                artists: artists_conv(i.ar),
             })
         }
         res.status(200);
         return JSON.stringify({
-            info:{
-                name:artist.name,
-                id:artist.id,
-                pic:artist.picUrl,
-                description:artist.briefDesc,
+            info: {
+                name: artist.name,
+                id: artist.id,
+                pic: artist.picUrl,
+                description: artist.briefDesc,
             },
-            songs:data,
+            songs: data,
         });
-    }catch(e){
+    } catch (e) {
         console.log(e);
         res.status(500);
     }
 }
 
-async function get_artist_album(res,query){
+async function get_artist_album(res, query) {
     let data = [];
     let result = await artist_album({
-        id:query.id,
+        id: query.id,
         offset: query.offset,
         limit: 30,
     });
@@ -417,9 +422,9 @@ async function get_artist_album(res,query){
 }
 
 module.exports = {
-    search_all, search_list, search_song, search_album,search_artist,
-    get_song_url,get_artist_album,get_song_detail,
-    generate_qr_code,qr_check,user_inf,get_playlist,
-    get_list_song,get_folder_songs,songlist_detail,
-    get_album,artist_info,
+    search_all, search_list, search_song, search_album, search_artist,
+    get_song_url, get_artist_album, get_song_detail,
+    generate_qr_code, qr_check, user_inf, get_playlist,
+    get_list_song, get_folder_songs, songlist_detail,
+    get_album, artist_info,
 }

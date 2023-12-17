@@ -1,5 +1,5 @@
 <template>
-    <div style="position: relative;">
+    <div style="position: relative;background-color: var(--bg-color);" class="container">
         <div class="drawer-container rowbox">
             <div class="colbox" style="align-items: center;justify-content: center;">
                 <img :src="require('@/assets/icon.png')" style="height: 80px;" />
@@ -19,7 +19,7 @@
                         <div>已过期</div>
                     </div>
                     <img :src="qrimg" />
-                    <div>使用手机 APP 扫码登录</div>
+                    <div>使用网易云 APP 扫码登录</div>
                     <el-link type="primary" @click="Login_cookie">使用cookie登录(不推荐)</el-link>
                 </div>
                 <div v-if="cookie_login" style="width: 80%;">
@@ -107,7 +107,6 @@ export default {
                         }
                     }).then((res) => {
                         let statusRes = res.data;
-                        console.log(statusRes.code)
                         if (statusRes.code === 800) {
                             console.log("out_of_Date");
                             this.out_of_date = true;
@@ -171,6 +170,7 @@ export default {
     /* backdrop-filter: blur(10px); */
     transition: all 0.5s ease-in-out;
     text-align: center;
+    background-color: var(--bg-color);
 }
 
 .drawer-body {
@@ -180,30 +180,7 @@ export default {
     flex-grow: 1;
     border-radius: 5px;
     transition: 0.5s ease-in-out;
-    background-color: var(--bg-color);
     box-shadow: var(--el-box-shadow);
-}
-
-.drawer-show-enter-from,
-.drawer-show-leave-to {
-    background: rgba(255, 255, 255, 0);
-    backdrop-filter: blur(0px);
-}
-
-.drawer-show-enter-from .drawer-body,
-.drawer-show-leave-to .drawer-body {
-    transform: translate(-50%, 100%);
-}
-
-.drawer-show-enter-to,
-.drawer-show-leave-from {
-    background: rgba(245, 245, 245, 0.1);
-    backdrop-filter: blur(10px);
-}
-
-.drawer-show-enter-to .drawer-body,
-.drawer-show-leave-from .drawer-body {
-    transform: translate(-50%, -50%);
 }
 
 .mask {

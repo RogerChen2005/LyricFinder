@@ -11,7 +11,7 @@
                             size='lg' animation='tada-hover'></box-icon>
                     </div>
                 </div>
-                <el-table :data="playlist" style="width: 100%;height: calc(100% - 80px);border-radius: 7px;">
+                <el-table :data="playlist" style="width: 100%;">
                     <el-table-column fixed="left" label="" width="30">
                         <template #default="header">
                             <box-icon name='volume-full' v-if="current_playing === header.$index" color='var(--text-color)'
@@ -20,8 +20,18 @@
                     </el-table-column>
                     <el-table-column type="index" />
                     <el-table-column prop="title" label="名称" />
-                    <el-table-column prop="artists" label="歌手" />
-                    <el-table-column prop="album" label="专辑" />
+                    <el-table-column prop="artists" label="歌手">
+                        <template #default="scope">
+                            <div v-for="i in scope.row.artists" :key="i.id">
+                                <el-link @click="display_artist(i)">{{ i.name }}</el-link>
+                            </div>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="album" label="专辑">
+                        <template #default="scope">
+                            <el-link @click="display_album(scope.row.album)">{{ scope.row.album.name }}</el-link>
+                        </template>
+                    </el-table-column>
                     <el-table-column fixed="right" label="操作">
                         <template #default="scope">
                             <div style="display: flex;flex-direction: row;">
@@ -45,10 +55,10 @@
             @pause="is_stop = true" @play="is_stop = false" @ended="ended"></audio>
         <div id="player-ui">
             <div id="left">
-                <img id="album-cover" :src="data.album.cover">
+                <img id="album-cover" :src="data.album ? data.album.cover : null">
                 <div style="text-align: left;width: 100%;overflow: hidden;">
                     <p class="hide_text" id="title">{{ data.title }}</p>
-                    <p class="hide_text" id="artist">{{ data.artists }}</p>
+                    <p class="hide_text" id="artist">{{ data.artists ? data.artists[0].name : "选择一首歌曲播放" }}</p>
                 </div>
             </div>
             <div id="mid">
@@ -95,7 +105,6 @@ export default {
                 duration: 0,
                 album_img: "",
                 title: "未播放歌曲",
-                artists: "选择一首歌曲播放"
             },
             current: "100",
             isPlaying: "play",
@@ -137,8 +146,8 @@ export default {
         },
         change(index) {
             this.isPlaying = "pause";
-            this.data = {};
-            let quality = "standard";
+            // this.data = {};
+            let quality = "exhigh";
             let settings = this.$store.settings;
             if (settings && settings.quality) {
                 quality = settings.quality;
@@ -153,6 +162,7 @@ export default {
                 this.data = this.playlist[index];
                 this.data.music_url = result.data.url;
                 this.current_playing = index;
+                setTimeout(() => this.apply_media_session(this.data), 0)
                 this.show();
             })
         },
@@ -229,8 +239,50 @@ export default {
         listen_all(queue) {
             this.playlist = queue;
             this.change(0);
+        },
+        display_album(item) {
+            this.list_show = false
+            this.$router.push(`/album?id=${item.id}`);
+        },
+        display_artist(item) {
+            this.list_show = false
+            this.$router.push(`/artist?id=${item.id}`);
+        },
+        play(){
+            this.isPlaying="pause";this.$refs.audio.play();
+        },
+        pause(){
+            this.isPlaying="play";this.$refs.audio.pause();
+        },
+        apply_media_session(data) {
+            if ("mediaSession" in navigator) {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: data.title,
+                    artist: data.artists[0].name,
+                    album: data.album.name,
+                    artwork: [
+                        { src: data.album.cover, type: 'image/jpeg' ,sizes:"1024x1024"},
+                    ]
+                });
+                const actionHandlers = [
+                    ['play', this.play],
+                    ['pause', this.pause],
+                    ['previoustrack', this.prev],
+                    ['nexttrack', this.next],
+                ];
+                for (const [action, handler] of actionHandlers) {
+                    try {
+                        navigator.mediaSession.setActionHandler(action, handler);
+                    } catch (error) {
+                        console.log(`The media session action "${action}" is not supported yet.`);
+                    }
+                }
+            }
+
         }
     },
+    created() {
+    }
 }
 </script>
 
@@ -366,7 +418,8 @@ html.dark #player {
     height: 75%;
     border-radius: 5px;
     top: 5%;
-    transition: .5s cubic-bezier(.25, .1, .3, 1.5);
+    /* transition: .5s cubic-bezier(.25, .1, .3, 1.5); */
+    transition: .5s ease-out;
     background-color: var(--bg-color);
 }
 
@@ -406,4 +459,5 @@ html.dark #player {
     cursor: pointer;
     transition: 1s;
     z-index: 2001;
-}</style>
+}
+</style>

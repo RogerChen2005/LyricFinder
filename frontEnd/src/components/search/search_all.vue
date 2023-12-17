@@ -179,7 +179,7 @@ export default {
     margin-right: 20px;
 }
 .col-container{
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     overflow-x: auto;
 }
 

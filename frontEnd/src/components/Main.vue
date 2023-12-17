@@ -46,7 +46,18 @@
 
 <script>
 
+import axios from 'axios';
 const tabs = ['/', '/list', '/download', '/tools', '/user'];
+
+function query_finder(key, query) {
+  let queries = query.split('&');
+  for (let i of queries) {
+    let temp = i.split('=');
+    if (temp[0] === key) {
+      return temp[1];
+    }
+  }
+}
 
 export default {
   name: 'MainPage',
@@ -57,18 +68,50 @@ export default {
       search_text: "",
     }
   },
-  created() {
-    let queue = localStorage.getItem("queue");
-    queue == null ? this.queue = [] : this.queue = JSON.parse(queue);
-    console.log(this.$route.fullPath);
-  },
-  beforeUnmount: function () {
-    console.log(this.queue);
-    localStorage['queue'] = JSON.stringify(this.queue);
-  },
   methods: {
     search() {
+      if (this.search_text.startsWith('https://y.music.163.com') || this.search_text.startsWith('http://music.163.com')) {
+        let start = this.search_text.lastIndexOf('/');
+        let mid = this.search_text.indexOf('?');
+        let path = this.search_text.substring(start + 1, mid);
+        let id = query_finder('id', this.search_text.substring(mid + 1));
+        switch (path) {
+          case 'song':
+            this.listen(id);
+            return;
+          case 'playlist':
+            this.$router.push(`/playlist?id=${id}`);
+            return;
+          case 'album':
+            this.$router.push(`/album?id=${id}`);
+            return;
+          case 'artist':
+            this.$router.push(`/artist?id=${id}`);
+            return;
+        }
+        let s = this.search_text.split('/');
+        if(s[3]==='album'){
+          this.$router.push(`/album?id=${s[4]}`);
+          return;
+        }
+      }
       this.$router.push(`/search/all?key=${this.search_text}`);
+    },
+    listen(id) {
+      axios.post('/func', {
+        target: 'get_song_detail',
+        data: {
+          id: id
+        }
+      }).then((res) => {
+        let data = res.data;
+        this.$store.state.trylisten({
+          id: data.id,
+          title: data.title,
+          artists: data.artists,
+          album: data.album,
+        })
+      })
     },
     onHandleSelect: function (index) {
       this.current_tab = index;
@@ -80,30 +123,31 @@ export default {
 
 <style>
 .footer {
-    display: flex;
-    align-items: center;
-    flex-direction: row;
-    justify-content: center;
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  justify-content: center;
 }
 
 .songlist_card {
-    cursor: pointer;
-    width: 170px;
-    height: 220px;
-    font-size: 14px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    margin: 10px;
-    transition: 1s;
-    border-radius: 10px;
-    transition: .5s;
+  cursor: pointer;
+  width: 170px;
+  height: 220px;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 10px;
+  transition: 1s;
+  border-radius: 10px;
+  transition: .5s;
 }
 
 .songlist_card:hover {
-    transform: translateY(-10px);
-    background-color: var(--bg-color);
+  transform: translateY(-10px);
+  background-color: var(--bg-color);
 }
+
 .page {
   height: 100%;
   width: 100%;
@@ -116,6 +160,7 @@ export default {
   width: 50px;
   transition: .5s;
 }
+
 #app {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -129,10 +174,11 @@ export default {
   width: 100%;
   height: 100%;
 }
+
 #search {
   display: flex;
   align-items: center;
-  border-bottom: solid 1px #4e4e4e;
+  border-bottom: solid 1px var(--el-border-color);
 }
 
 #main {
