@@ -77,7 +77,7 @@ export default {
         },
         init() {
             this.loading = true;
-            axios.post('/func', {
+            axios.post('./func', {
                 target: "get_album",
                 data: {
                     id: this.id,
@@ -89,7 +89,7 @@ export default {
             })
         },
         display_artist(item) {
-            this.$router.push(`/artist?id=${item.id}`);
+            this.$router.push(`./artist?id=${item.id}`);
         },
     },
     created() {

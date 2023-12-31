@@ -23,7 +23,7 @@
                 </el-table-column>
                 <el-table-column prop="album" label="专辑">
                     <template #default="scope">
-                        <el-link @click="display_album(scope.row)">{{ scope.row.album.name }}</el-link>
+                        <el-link @click="display_album(scope.row.album)">{{ scope.row.album.name }}</el-link>
                     </template>
                 </el-table-column>
                 <el-table-column fixed="right" label="操作">
@@ -65,7 +65,7 @@ export default {
     methods: {
         handle_drawer_page_change(index) {
             this.loading = true;
-            axios.post('/func', {
+            axios.post('./func', {
                 target: "get_list_song",
                 data: {
                     id: this.id,
@@ -88,7 +88,7 @@ export default {
             this.$store.state.listen_all(this.list);
         },
         init(){
-            axios.post('/func',{
+            axios.post('./func',{
                 target:"songlist_detail",
                 data:{
                     id:this.id,
@@ -99,10 +99,10 @@ export default {
             })
         },
         display_album(item) {
-            this.$router.push(`/album?id=${item.id}`);
+            this.$router.push(`./album?id=${item.id}`);
         },
         display_artist(item) {
-            this.$router.push(`/artist?id=${item.id}`);
+            this.$router.push(`./artist?id=${item.id}`);
         },
     },
     created() {

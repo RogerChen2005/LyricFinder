@@ -98,7 +98,7 @@ export default {
         init() {
             this.loading = true;
             this.detail={};
-            axios.post('/func', {
+            axios.post('./func', {
                 target: "artist_info",
                 data: {
                     id: this.id,
@@ -111,7 +111,7 @@ export default {
             })
         },
         handle_page_change(index) {
-            axios.post('/func', {
+            axios.post('./func', {
                 target: "get_artist_album",
                 data: {
                     id: this.id,
@@ -123,10 +123,10 @@ export default {
             })
         },
         display_album(item) {
-            this.$router.push(`/album?id=${item.id}`);
+            this.$router.push(`./album?id=${item.id}`);
         },
         display_artist(item) {
-            this.$router.push(`/artist?id=${item.id}`);
+            this.$router.push(`./artist?id=${item.id}`);
         },
     },
     watch: {

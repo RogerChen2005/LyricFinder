@@ -98,7 +98,7 @@ export default {
       this.$router.push(`/search/all?key=${this.search_text}`);
     },
     listen(id) {
-      axios.post('/func', {
+      axios.post('./func', {
         target: 'get_song_detail',
         data: {
           id: id

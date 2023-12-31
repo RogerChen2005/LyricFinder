@@ -49,7 +49,7 @@ export default {
     methods: {
         get_songlist() {
             this.loading = true;
-            axios.post("/func", {
+            axios.post("./func", {
                 target: "get_playlist",
                 data: {
                     uid: this.uid,

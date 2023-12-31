@@ -121,7 +121,7 @@ export default {
         },
         async listen_temporary(i) {
             let data = this.songs[i];
-            let result = await axios.post("/func", {
+            let result = await axios.post("./func", {
                 target: "get_song_detail",
                 data: {
                     id: "" + data.id,
@@ -131,13 +131,13 @@ export default {
             this.$store.state.trylisten(data);
         },
         display_album(item) {
-            this.$router.push(`/album?id=${item.id}`);
+            this.$router.push(`./album?id=${item.id}`);
         },
         display_list(item) {
-            this.$router.push(`/playlist?id=${item.id}`);
+            this.$router.push(`./playlist?id=${item.id}`);
         },
         display_artist(item) {
-            this.$router.push(`/artist?id=${item.id}`);
+            this.$router.push(`./artist?id=${item.id}`);
         },
     },
     created() {

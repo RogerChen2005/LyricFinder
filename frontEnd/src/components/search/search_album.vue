@@ -36,7 +36,7 @@ export default {
     },
     methods: {
         async add(i) {
-            let result = await axios.post("/func", {
+            let result = await axios.post("./func", {
                 target: "get_song_detail",
                 data: {
                     id: "" + i.id,
@@ -47,7 +47,7 @@ export default {
         },
         search_query(index) {
             this.loading = true;
-            axios.post("/func", {
+            axios.post("./func", {
                 target: "search_album",
                 data: {
                     key: this.key,
@@ -65,7 +65,7 @@ export default {
         },
         async listen_temporary(i) {
             let data = i;
-            let result = await axios.post("/func", {
+            let result = await axios.post("./func", {
                 target: "get_song_detail",
                 data: {
                     id: "" + i.id,
@@ -75,10 +75,10 @@ export default {
             this.$store.state.trylisten(data);
         },
         handle_page_change(val) {
-            this.$router.push(`/search/album?key=${this.key}&page=${val}`);
+            this.$router.push(`./search/album?key=${this.key}&page=${val}`);
         },
         display_album(item) {
-            this.$router.push(`/album?id=${item.id}`);
+            this.$router.push(`./album?id=${item.id}`);
         },
     },
     created(){

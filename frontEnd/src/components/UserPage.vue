@@ -46,7 +46,7 @@ export default {
     },
     methods: {
         user_inf() {
-            axios.post("http://localhost:3030/func", {
+            axios.post("./func", {
                 target: "user_inf",
                 data: {
                     cookie: localStorage.getItem("cookie")

@@ -67,7 +67,7 @@ export default {
             }
         },
         confirm_cookie_login() {
-            axios.post("/func", {
+            axios.post("./func", {
                 target: "user_inf",
                 data: {
                     cookie: this.input_cookie
@@ -93,14 +93,14 @@ export default {
         Login_qr() {
             this.cookie_login = false;
             this.qr_login = true;
-            axios.post("/func", {
+            axios.post("./func", {
                 target: "generate_qr_code",
                 data: {}
             }).then((response) => {
                 this.qrimg = response.data.qrimg;
                 this.key = response.data.key;
                 this.timer = setInterval(() => {
-                    axios.post("/func", {
+                    axios.post("./func", {
                         target: "qr_check",
                         data: {
                             key: this.key
@@ -121,7 +121,7 @@ export default {
                             this.scan_success = false;
                             this.out_of_date = false;
                             clearInterval(this.timer);
-                            axios.post("/func", {
+                            axios.post("./func", {
                                 target: "user_inf",
                                 data: {
                                     cookie: statusRes.cookie

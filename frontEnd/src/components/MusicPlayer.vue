@@ -152,7 +152,7 @@ export default {
             if (settings && settings.quality) {
                 quality = settings.quality;
             }
-            axios.post("/func", {
+            axios.post("./func", {
                 target: "get_song_url",
                 data: {
                     id: this.playlist[index].id,
@@ -242,11 +242,11 @@ export default {
         },
         display_album(item) {
             this.list_show = false
-            this.$router.push(`/album?id=${item.id}`);
+            this.$router.push(`./album?id=${item.id}`);
         },
         display_artist(item) {
             this.list_show = false
-            this.$router.push(`/artist?id=${item.id}`);
+            this.$router.push(`./artist?id=${item.id}`);
         },
         play(){
             this.isPlaying="pause";this.$refs.audio.play();

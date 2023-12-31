@@ -79,7 +79,7 @@ class Task {
         for (let i in this.queue) {
             let arr = [];
             let result;
-            result = await axios.post("/download", {
+            result = await axios.post("./download", {
                 target: "music_download",
                 data:{
                     query: this.queue[i],
@@ -88,7 +88,7 @@ class Task {
             });
             arr.push(result.data.filename);
             if (settings.lyric) {
-                result=await axios.post("/download", {
+                result=await axios.post("./download", {
                     target: "lyric_download",
                     data:{
                         query: this.queue[i],
@@ -116,7 +116,7 @@ class Task {
                 data: {
                     filename: query[i]
                 },
-                url: '/file',
+                url: './file',
                 onDownloadProgress(ProgressEvent) {
                     let percent = Math.floor(ProgressEvent.loaded / ProgressEvent.total);
                     queue[index].prog = percent;
