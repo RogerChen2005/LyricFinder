@@ -39,7 +39,6 @@
 </template>
 
 <script>
-import axios from 'axios';
 import { ElNotification } from 'element-plus'
 export default {
     name: 'UserLogin',
@@ -67,7 +66,7 @@ export default {
             }
         },
         confirm_cookie_login() {
-            axios.post("./func", {
+            this.$axios.post("func",{
                 target: "user_inf",
                 data: {
                     cookie: this.input_cookie
@@ -93,14 +92,14 @@ export default {
         Login_qr() {
             this.cookie_login = false;
             this.qr_login = true;
-            axios.post("./func", {
+            this.$axios.post("func", {
                 target: "generate_qr_code",
                 data: {}
             }).then((response) => {
                 this.qrimg = response.data.qrimg;
                 this.key = response.data.key;
                 this.timer = setInterval(() => {
-                    axios.post("./func", {
+                    this.$axios.post("func", {
                         target: "qr_check",
                         data: {
                             key: this.key
@@ -121,21 +120,13 @@ export default {
                             this.scan_success = false;
                             this.out_of_date = false;
                             clearInterval(this.timer);
-                            axios.post("./func", {
-                                target: "user_inf",
-                                data: {
-                                    cookie: statusRes.cookie
-                                }
-                            }).then((res) => {
-                                localStorage['profile'] = JSON.stringify(res.data);
-                                localStorage.setItem('cookie', statusRes.cookie);
-                                ElNotification({
-                                    title: 'Success',
-                                    message: '登陆成功',
-                                    type: 'success',
-                                });
-                                this.$router.push("/user");
+                            ElNotification({
+                                title: 'Success',
+                                message: '登陆成功',
+                                type: 'success',
                             });
+                            localStorage.setItem('cookie', statusRes.cookie);
+                            this.$router.push("/user");
                         }
                     });
                 }, 1000);

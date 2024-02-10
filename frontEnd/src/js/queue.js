@@ -32,7 +32,7 @@ export class Queue {
         })
     }
     get length() {
-        return this.total;
+        return this.queue.length;
     }
     get inner_queue() {
         return this.queue;
@@ -118,7 +118,7 @@ class Task {
                 },
                 url: './file',
                 onDownloadProgress(ProgressEvent) {
-                    let percent = Math.floor(ProgressEvent.loaded / ProgressEvent.total);
+                    let percent = Math.floor(ProgressEvent.loaded / ProgressEvent.total * 100);
                     queue[index].prog = percent;
                 }
             })

@@ -1,37 +1,26 @@
 <template>
     <router-view id='body'></router-view>
-    <MusicPlayer ref="player" id="player" />
 </template>
 
 <script>
-import MusicPlayer from './components/MusicPlayer.vue'
 import { Queue } from './js/queue.js'
+import { _data } from './js/data_init.js'
 const default_settings = { "mode": 0, "lyric": true, "tlyric": true, "quality": "exhigh", "level": "exhigh" };
 
 export default {
     name: "App",
-    components: {
-        MusicPlayer,
-    },
     methods: {
-        trylisten(data) {
-            this.$refs.player.init(data);
-        },
-        listen_all(queue) {
-            this.$refs.player.listen_all(queue);
-        }
     },
     created() {
-        let profile = JSON.parse(localStorage.getItem('profile'));
+        let cookie = localStorage.getItem('cookie');
         this.$store.state.classManager.init_darkmode();
-        if (profile) {
-            this.$store.state.trylisten = this.trylisten;
-            this.$store.state.listen_all = this.listen_all;
-            this.$store.state.queue = new Queue();
-            let settings = JSON.parse(localStorage.getItem("settings"));
-            this.$store.state.settings = settings ? settings : default_settings;
+        this.$store.state.queue = new Queue();
+        this.$store.state.data = new _data()
+        let settings = JSON.parse(localStorage.getItem("settings"));
+        this.$store.state.settings = settings ? settings : default_settings;
+        if (!cookie) {
+            this.$router.push('/login')
         }
-        else this.$router.push('/login');
     }
 }
 </script>
@@ -41,13 +30,11 @@ export default {
     0% {
         translate: 100px 0;
         opacity: 0;
-        filter: blur(20px);
     }
 
     100% {
         translate: 0 0;
         opacity: 1;
-        filter: blur(0px);
     }
 }
 
@@ -61,17 +48,24 @@ body {
     background-color: var(--bg-color);
     color: var(--text-color);
     --el-bg-color: transparent;
-    --el-fill-color-blank:transparent;
+    --el-fill-color-blank: transparent;
+    --el-mask-color: #fbfbfbae;
+}
+
+html.dark body {
+    --el-mask-color: #2a2a2ab8;
 }
 
 html {
     --bg-color: #fbfbfb;
     --text-color: #464646;
+    --bd-color: #bbbbbb99;
 }
 
 html.dark {
     --bg-color: #2a2a2a;
     --text-color: #c0c0c0;
+    --bd-color: #7f7f7f7c;
     --el-bg-color: transparent;
 }
 

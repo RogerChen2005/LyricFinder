@@ -39,9 +39,6 @@
 </template>
 
 <script>
-import axios from 'axios';
-
-// axios.defaults.withCredentials = true;
 
 export default {
     name: 'SearchPage',
@@ -58,7 +55,7 @@ export default {
     },
     methods: {
         async add(i) {
-            let result = await axios.post("./func", {
+            let result = await this.$axios.post("func", {
                 target: "get_song_detail",
                 data: {
                     id: "" + i.id,
@@ -69,7 +66,7 @@ export default {
         },
         search_query(index) {
             this.search_loading = true;
-            axios.post("./func", {
+            this.$axios.post("func", {
                 target: "search_song",
                 data: {
                     key: this.key,
@@ -88,7 +85,7 @@ export default {
         },
         async listen_temporary(i) {
             let data = i;
-            let result = await axios.post("./func", {
+            let result = await this.$axios.post("func", {
                 target: "get_song_detail",
                 data: {
                     id: "" + i.id,

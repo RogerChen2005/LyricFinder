@@ -1,18 +1,9 @@
-const { artist_album, artists, search, song_url_v1, song_detail, login_qr_key, login_qr_create, login_qr_check, user_account, user_playlist, playlist_track_all, playlist_detail, album } = require("./api.js")
+const { homepage_block_page,artist_album, artists, search, song_url_v1, song_detail, login_qr_key, login_qr_create, login_qr_check, user_account, user_playlist, playlist_track_all, playlist_detail, album } = require("./api.js")
 const { download, get_folder_songs } = require('./download.js')
 const fs = require('fs');
 const cookie = String(fs.readFileSync("./cookies/cookie.txt"));
-
-function artists_conv(obj) {
-    let data = [];
-    for (let i of obj) {
-        data.push({
-            name: i.name,
-            id: i.id
-        });
-    }
-    return data;
-}
+const {artists_conv} = require('./js/global.js');
+const {homepage_format} = require('./js/homepage_format.js');
 
 async function search_all(res, query) {
     let songs = [], albums = [], lists = [], artists = [];
@@ -71,6 +62,9 @@ async function search_all(res, query) {
         moreText.artist = result.body.result.artist.moreText;
     }
     res.status(200);
+    console.log({
+        songs, lists, albums, artists, moreText
+    });
     return JSON.stringify({
         songs, lists, albums, artists, moreText
     })
@@ -421,10 +415,25 @@ async function get_artist_album(res, query) {
     })
 }
 
+async function discover(res,query){
+    let result = await homepage_block_page({
+        cookie:query.cookie
+    });
+    if(result.body.data){
+        let formated = homepage_format(result.body.data);
+        res.status(200);
+        return JSON.stringify(formated);
+    }
+    else {
+        res.status(404);
+        return ""
+    };
+}
+
 module.exports = {
     search_all, search_list, search_song, search_album, search_artist,
     get_song_url, get_artist_album, get_song_detail,
     generate_qr_code, qr_check, user_inf, get_playlist,
     get_list_song, get_folder_songs, songlist_detail,
-    get_album, artist_info,
+    get_album, artist_info,discover
 }

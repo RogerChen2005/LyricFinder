@@ -49,7 +49,7 @@
     <div ref="player" id="player">
         <div id="slider">
             <el-slider size="small" v-model="current" :max="data.duration" :show-tooltip="false"
-                @change="changeLong()"></el-slider>
+                @input="changeLong"></el-slider>
         </div>
         <audio :src="data.music_url" @canplay="showLong" ref="audio" autoplay="" @timeupdate="getCurr"
             @pause="is_stop = true" @play="is_stop = false" @ended="ended"></audio>
@@ -67,11 +67,13 @@
                 <box-icon name='skip-next' @click="next" color='var(--text-color)' size='md'></box-icon>
             </div>
             <div style="display: flex;flex-direction:row;align-items: center;justify-content: center;">
-                <div style="display: flex;letter-spacing: 1px;">
+                <div style="display: flex;letter-spacing: 1px;margin-right: 10px;">
                     <div style="">{{ toTime(current) }}</div>/
                     <div style="">{{ toTime(data.duration) }}</div>
                 </div>
-                <div style="margin: 0 10px 0 10px;cursor: pointer;" class="colbox">
+                <box-icon name='download' type='solid' color='var(--text-color)' @click="download"
+                    style="margin-right: 10px;cursor: pointer;"></box-icon>
+                <div style="margin-right:10px;cursor: pointer;" class="colbox">
                     <box-icon v-if="mode < 2" name='repeat' type='solid' color='var(--text-color)'
                         @click="change_mode"></box-icon>
                     <box-icon v-if="mode === 2" name='shuffle' type='solid' color='var(--text-color)'
@@ -92,7 +94,6 @@
 
 <script>
 import { ElMessage } from 'element-plus'
-import axios from "axios";
 
 export default {
     name: 'MusicPlayer',
@@ -123,13 +124,8 @@ export default {
         },
         getCurr() { this.current = parseInt(this.$refs.audio.currentTime); },
         showLong() { this.data.duration = parseInt(this.$refs.audio.duration); },
-        changeLong() {
-            let ct = this.current;
-            if (!isNaN(ct)) {
-                setTimeout(() => {
-                    this.$refs.audio.currentTime = ct;
-                }, 0)
-            }
+        changeLong(ct) {
+            this.$refs.audio.currentTime = ct;
         },
         plays() {
             if (this.isPlaying == "play") {
@@ -152,7 +148,7 @@ export default {
             if (settings && settings.quality) {
                 quality = settings.quality;
             }
-            axios.post("./func", {
+            this.$axios.post("func",{
                 target: "get_song_url",
                 data: {
                     id: this.playlist[index].id,
@@ -248,11 +244,11 @@ export default {
             this.list_show = false
             this.$router.push(`./artist?id=${item.id}`);
         },
-        play(){
-            this.isPlaying="pause";this.$refs.audio.play();
+        play() {
+            this.isPlaying = "pause"; this.$refs.audio.play();
         },
-        pause(){
-            this.isPlaying="play";this.$refs.audio.pause();
+        pause() {
+            this.isPlaying = "play"; this.$refs.audio.pause();
         },
         apply_media_session(data) {
             if ("mediaSession" in navigator) {
@@ -261,7 +257,7 @@ export default {
                     artist: data.artists[0].name,
                     album: data.album.name,
                     artwork: [
-                        { src: data.album.cover, type: 'image/jpeg' ,sizes:"1024x1024"},
+                        { src: data.album.cover, type: 'image/jpeg', sizes: "1024x1024" },
                     ]
                 });
                 const actionHandlers = [
@@ -279,6 +275,9 @@ export default {
                 }
             }
 
+        },
+        download() {
+            this.$store.state.queue.add(this.playlist[this.current_playing]);
         }
     },
     created() {

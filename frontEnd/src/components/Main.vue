@@ -16,7 +16,7 @@
         </el-menu-item>
         <el-menu-item index="3">
           <el-icon>
-            <el-badge :value="queue.length" :hidden="queue.length == 0" class="item"><box-icon
+            <el-badge :value="$store.state.queue.length" :hidden="$store.state.queue.length == 0" class="item"><box-icon
                 name="download"></box-icon></el-badge>
           </el-icon>
           <template #title>下载</template>
@@ -28,6 +28,10 @@
         <el-menu-item index="5">
           <el-icon><box-icon name="user"></box-icon></el-icon>
           <template #title>账户</template>
+        </el-menu-item>
+        <el-menu-item index="6">
+          <el-icon><box-icon name="info-circle"></box-icon></el-icon>
+          <template #title>关于</template>
         </el-menu-item>
       </el-menu>
     </el-aside>
@@ -42,12 +46,13 @@
       </el-main>
     </el-container>
   </el-container>
+  <MusicPlayer ref="player" id="player" />
 </template>
 
 <script>
-
+import MusicPlayer from './MusicPlayer.vue'
 import axios from 'axios';
-const tabs = ['/', '/list', '/download', '/tools', '/user'];
+const tabs = ['/', '/list', '/download', '/tools', '/user', '/about'];
 
 function query_finder(key, query) {
   let queries = query.split('&');
@@ -61,6 +66,9 @@ function query_finder(key, query) {
 
 export default {
   name: 'MainPage',
+  components: {
+    MusicPlayer,
+  },
   data() {
     return {
       current_tab: 2,
@@ -90,7 +98,7 @@ export default {
             return;
         }
         let s = this.search_text.split('/');
-        if(s[3]==='album'){
+        if (s[3] === 'album') {
           this.$router.push(`/album?id=${s[4]}`);
           return;
         }
@@ -117,6 +125,16 @@ export default {
       this.current_tab = index;
       this.$router.push(tabs[index - 1]);
     },
+    trylisten(data) {
+      this.$refs.player.init(data);
+    },
+    listen_all(queue) {
+      this.$refs.player.listen_all(queue);
+    }
+  },
+  created() {
+    this.$store.state.trylisten = this.trylisten;
+    this.$store.state.listen_all = this.listen_all;
   }
 }
 </script>

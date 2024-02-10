@@ -5,6 +5,7 @@ import 'element-plus/theme-chalk/dark/css-vars.css'
 import 'element-plus/dist/index.css'
 import 'boxicons'
 import router from './router.js'
+import axios from './js/request.js'
 import App from './App.vue'
 // import locale from 'element-plus/lib/locale/lang/zh-cn.js
 import classManager from './js/classManager.js'
@@ -17,7 +18,8 @@ const store = createStore({
         }
     }
 });
+app.config.globalProperties.$axios = axios;
 app.use(store);
 app.use(router);
-app.use(ElementPlus)
-app.mount('#app')
+app.use(ElementPlus);
+app.mount('#app');

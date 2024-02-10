@@ -45,8 +45,6 @@
 </template>
 
 <script>
-import axios from "axios";
-
 export default {
     name: "albumPage",
     data() {
@@ -65,7 +63,7 @@ export default {
     methods: {
         handle_drawer_page_change(index) {
             this.loading = true;
-            axios.post('./func', {
+            this.$axios.post("func", {
                 target: "get_list_song",
                 data: {
                     id: this.id,
@@ -88,7 +86,7 @@ export default {
             this.$store.state.listen_all(this.list);
         },
         init(){
-            axios.post('./func',{
+            this.$axios.post("func",{
                 target:"songlist_detail",
                 data:{
                     id:this.id,

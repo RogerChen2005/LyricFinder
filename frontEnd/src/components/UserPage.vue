@@ -1,33 +1,32 @@
 <template>
-        <div id="main_content" class="container">
-            <div v-if="!isLogin" style="text-align: center;">
-                <el-empty description="未登录" />
-                <el-button type="primary" @click="$router.push('/login')">登陆</el-button>
-            </div>
-            <div v-if="isLogin" id="user-page">
-                <div id="op">
-                    <el-button @click="user_inf" type="primary"><box-icon color="white"
-                            name='refresh'></box-icon>刷新登录</el-button>
-
-                    <el-popconfirm @confirm="exit" title="确认退出登录？">
-                        <template #reference>
-                            <el-button type="danger"><box-icon color="white" name='exit'></box-icon>退出登录</el-button>
-                        </template>
-                    </el-popconfirm>
-                </div>
-                <img id="bg" :src="bgurl">
-                <div id="mask"></div>
-                <el-avatar id="av" :size="150">
-                    <img :src="avurl" />
-                </el-avatar>
-                <el-text id="name">{{ name }} <img v-if="isvip" style="width: 50px;vertical-align: middle;"
-                        :src="require('@/assets/vip.png')"></el-text>
-                <el-text id="sg">{{ sig }}</el-text>
-            </div>
+    <div id="main_content" class="container">
+        <div v-if="!isLogin" style="text-align: center;">
+            <el-empty description="未登录" />
+            <el-button type="primary" @click="$router.push('/login')">登陆</el-button>
         </div>
+        <div v-if="isLogin" id="user-page">
+            <div id="op">
+                <el-button @click="user_inf" type="primary"><box-icon color="white"
+                        name='refresh'></box-icon>刷新登录</el-button>
+
+                <el-popconfirm @confirm="exit" title="确认退出登录？">
+                    <template #reference>
+                        <el-button type="danger"><box-icon color="white" name='exit'></box-icon>退出登录</el-button>
+                    </template>
+                </el-popconfirm>
+            </div>
+            <img id="bg" :src="bgurl">
+            <div id="mask"></div>
+            <el-avatar id="av" :size="150">
+                <img :src="avurl" />
+            </el-avatar>
+            <el-text id="name">{{ name }} <img v-if="isvip" style="width: 50px;vertical-align: middle;"
+                    :src="require('@/assets/vip.png')"></el-text>
+            <el-text id="sg">{{ sig }}</el-text>
+        </div>
+    </div>
 </template>
 <script>
-import axios from 'axios';
 import { ElNotification } from 'element-plus'
 
 export default {
@@ -46,51 +45,52 @@ export default {
     },
     methods: {
         user_inf() {
-            axios.post("./func", {
-                target: "user_inf",
-                data: {
-                    cookie: localStorage.getItem("cookie")
-                }
-            }).then((res) => {
-                if (res.data.status != 0) {
-                    ElNotification({
-                        title: 'Error',
-                        message: '刷新失败',
-                        type: 'error',
-                    });
-                    return this.exit();
-                }
+            this.$store.state.data.update("profile", (data) => {
                 ElNotification({
                     title: 'Success',
                     message: '刷新成功',
                     type: 'success',
                 });
-                localStorage['profile'] = JSON.stringify(res.data);
-                return this.refresh();
-            });
+                this.refresh(data.profile);
+            }, (err) => {
+                console.log(err);
+                ElNotification({
+                    title: 'Error',
+                    message: '刷新失败',
+                    type: 'error',
+                });
+                this.exit();
+            })
         },
-        refresh() {
-            let profile = JSON.parse(localStorage.getItem('profile'));
-            if (profile != null) {
-                this.isLogin = true;
-                this.name = profile['nickname'];
-                this.bgurl = profile['backgroundUrl'];
-                this.avurl = profile['avatarUrl'];
-                this.sig = profile['signature'];
-                this.isvip = profile['isvip'];
-            }
+        refresh(profile) {
+            this.isLogin = true;
+            this.name = profile['nickname'];
+            this.bgurl = profile['backgroundUrl'];
+            this.avurl = profile['avatarUrl'];
+            this.sig = profile['signature'];
+            this.isvip = profile['isvip'];
             return;
         },
         exit() {
-            localStorage.removeItem('profile');
-            localStorage.removeItem('list');
+            this.$store.state.data.remove_all();
+            localStorage.removeItem("cookie");
             this.isLogin = false;
             this.$router.push('/login');
             return;
         }
     },
-    created: function () {
-        this.refresh();
+    created() {
+        this.$store.state.data.gets("profile", (data) => {
+            this.refresh(data.profile);
+        }, (err) => {
+            console.log(err);
+            ElNotification({
+                title: 'Error',
+                message: '刷新失败',
+                type: 'error',
+            });
+            this.exit();
+        })
     }
 }
 </script>
@@ -125,7 +125,7 @@ export default {
     background: linear-gradient(#FFFFFF00, #FFFFFFAA 25%, #FFFFFFFF 60%);
 }
 
-html.dark #mask{
+html.dark #mask {
     background: linear-gradient(#00000000, #2b2b2baa 25%, #2b2b2b 60%);
 }
 

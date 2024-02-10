@@ -18,7 +18,7 @@
                             等待服务器...
                         </div>
                         <div v-if="queue[scope.$index].status == 2">
-                            <el-progress :percentage="queue[scope.$index].prog * 100"
+                            <el-progress :percentage="queue[scope.$index].prog"
                                 style="width: 80%;"></el-progress>
                         </div>
                     </template>

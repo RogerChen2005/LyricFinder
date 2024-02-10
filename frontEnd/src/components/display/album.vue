@@ -47,8 +47,6 @@
 </template>
 
 <script>
-import axios from "axios";
-
 export default {
     name: "albumPage",
     data() {
@@ -77,7 +75,7 @@ export default {
         },
         init() {
             this.loading = true;
-            axios.post('./func', {
+            this.$axios.post("func", {
                 target: "get_album",
                 data: {
                     id: this.id,
