@@ -6,8 +6,8 @@ module.exports = defineConfig({
   publicPath:"./",
   devServer:{
     proxy:"http://127.0.0.1:3030"
-  },
-  chainWebpack: config => {
+    // proxy:"https://121.43.231.63/lf"
+  },  chainWebpack: config => {
     config.module
       .rule('markdown')
       .test(/\.md$/)

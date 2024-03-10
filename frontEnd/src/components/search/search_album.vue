@@ -33,16 +33,6 @@ export default {
         }
     },
     methods: {
-        async add(i) {
-            let result = await this.$axios.post("func",{
-                target: "get_song_detail",
-                data: {
-                    id: "" + i.id,
-                }
-            })
-            i.album_img = result.data.album_img;
-            this.$store.state.queue.add(i);
-        },
         search_query(index) {
             this.loading = true;
             this.$axios.post("func", {
@@ -61,22 +51,11 @@ export default {
             );
             
         },
-        async listen_temporary(i) {
-            let data = i;
-            let result = await this.$axios.post("func", {
-                target: "get_song_detail",
-                data: {
-                    id: "" + i.id,
-                }
-            })
-            data.album_img = result.data.album_img;
-            this.$store.state.trylisten(data);
-        },
         handle_page_change(val) {
-            this.$router.push(`./search/album?key=${this.key}&page=${val}`);
+            this.$router.push(`/search/album?key=${this.key}&page=${val}`);
         },
         display_album(item) {
-            this.$router.push(`./album?id=${item.id}`);
+            this.$router.push(`/album?id=${item.id}`);
         },
     },
     created(){

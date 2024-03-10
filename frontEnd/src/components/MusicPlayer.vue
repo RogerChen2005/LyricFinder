@@ -144,10 +144,11 @@ export default {
             this.isPlaying = "pause";
             // this.data = {};
             let quality = "exhigh";
-            let settings = this.$store.settings;
+            let settings = this.$store.state.settings;
             if (settings && settings.quality) {
                 quality = settings.quality;
             }
+            console.log(quality);
             this.$axios.post("func",{
                 target: "get_song_url",
                 data: {

@@ -62,9 +62,6 @@ async function search_all(res, query) {
         moreText.artist = result.body.result.artist.moreText;
     }
     res.status(200);
-    console.log({
-        songs, lists, albums, artists, moreText
-    });
     return JSON.stringify({
         songs, lists, albums, artists, moreText
     })
@@ -128,7 +125,10 @@ async function search_song(res, query) {
         data.push({
             id: i.id,
             title: i.name,
-            album: i.album.name,
+            album: {
+                name:i.album.name,
+                id:i.album.id
+            },
             artists: artists_conv(i.artists)
         });
     }
@@ -180,6 +180,7 @@ async function get_song_detail(res, query) {
 }
 
 async function get_song_url(res, query) {
+    console.log(query);
     let result = await song_url_v1({
         id: query.id,
         level: query.level,
@@ -272,7 +273,8 @@ async function get_list_song(res, query) {
     let result = await playlist_track_all({
         id: query.id,
         limit: 30,
-        offset: query.offset
+        offset: query.offset,
+        cookie: query.cookie 
     })
     for (let i of result.body.songs) {
         data.push({
@@ -295,7 +297,8 @@ async function get_list_song(res, query) {
 async function songlist_detail(res, query) {
     try {
         let result = await playlist_detail({
-            id: query.id
+            id: query.id,
+            cookie:query.cookie
         });
         let songlist = result.body.playlist;
         res.status(200);
@@ -317,7 +320,7 @@ async function songlist_detail(res, query) {
 async function get_album(res, query) {
     try {
         let result = await album({
-            id: query.id
+            id: query.id,
         });
         let songlist = result.body.album;
         let data = [];
@@ -371,7 +374,8 @@ async function artist_info(res, query) {
                 title: i.name,
                 album: {
                     name: i.al.name,
-                    id: i.al.id
+                    id: i.al.id,
+                    cover:i.al.picUrl,
                 },
                 artists: artists_conv(i.ar),
             })

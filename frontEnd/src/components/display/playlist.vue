@@ -67,7 +67,8 @@ export default {
                 target: "get_list_song",
                 data: {
                     id: this.id,
-                    offset: (index - 1) * 30
+                    offset: (index - 1) * 30,
+                    cookie:localStorage.getItem("cookie")
                 }
             }).then((res) => {
                 this.index_start = (index)*30,
@@ -90,6 +91,7 @@ export default {
                 target:"songlist_detail",
                 data:{
                     id:this.id,
+                    cookie:localStorage.getItem("cookie")
                 }
             }).then((res)=>{
                 this.songlist = res.data;

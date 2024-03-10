@@ -1,7 +1,7 @@
 <template>
     <div id="main_container">
         <div class="title">
-            <div>单曲</div><el-link :href="`/#/search/song?key=${key}&page=1`">{{ moreText.song }}</el-link>
+            <div>单曲</div><el-link :href="`./#/search/song?key=${key}&page=1`">{{ moreText.song }}</el-link>
         </div>
         <el-table :data="songs" style="width: 100%;">
             <el-table-column type="index" />
@@ -28,7 +28,7 @@
             </el-table-column>
         </el-table>
         <div class="title">
-            <div>专辑</div><el-link :href="`/#/search/album?key=${key}&page=1`">{{ moreText.album }}</el-link>
+            <div>专辑</div><el-link :href="`./#/search/album?key=${key}&page=1`">{{ moreText.album }}</el-link>
         </div>
         <div class="colbox col-container">
             <el-card v-on:click="display_album(item)" v-for="item in albums" :key="item.id" class="songlist_card"
@@ -42,7 +42,7 @@
             </el-card>
         </div>
         <div class="title">
-            <div>歌手</div><el-link :href="`/#/search/artist?key=${key}&page=1`">{{ moreText.artist }}</el-link>
+            <div>歌手</div><el-link :href="`./#/search/artist?key=${key}&page=1`">{{ moreText.artist }}</el-link>
         </div>
         <div class="colbox col-container">
             <el-card v-on:click="display_artist(item)" v-for="item in artists" :key="item.id" class="songlist_card"
@@ -54,7 +54,7 @@
             </el-card>
         </div>
         <div class="title">
-            <div>歌单</div><el-link :href="`/#/search/list?key=${key}&page=1`">{{ moreText.list }}</el-link>
+            <div>歌单</div><el-link :href="`./#/search/list?key=${key}&page=1`">{{ moreText.list }}</el-link>
         </div>
         <div class="colbox col-container">
             <el-card v-on:click="display_list(item)" v-for="item in lists" :key="item.id" class="songlist_card"
@@ -95,7 +95,7 @@ export default {
                     id: "" + item.id,
                 }
             })
-            item.album_img = result.data.album_img;
+            item.album.cover = result.data.album.cover;
             this.$store.state.queue.add(item);
         },
         search_query() {
@@ -126,17 +126,17 @@ export default {
                     id: "" + data.id,
                 }
             })
-            data.album_img = result.data.album_img;
+            data.album.cover = result.data.album.cover
             this.$store.state.trylisten(data);
         },
         display_album(item) {
-            this.$router.push(`./album?id=${item.id}`);
+            this.$router.push(`/album?id=${item.id}`);
         },
         display_list(item) {
-            this.$router.push(`./playlist?id=${item.id}`);
+            this.$router.push(`/playlist?id=${item.id}`);
         },
         display_artist(item) {
-            this.$router.push(`./artist?id=${item.id}`);
+            this.$router.push(`/artist?id=${item.id}`);
         },
     },
     created() {

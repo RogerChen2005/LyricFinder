@@ -39,7 +39,7 @@ export default {
                     id: "" + i.id,
                 }
             })
-            i.album_img = result.data.album_img;
+            i.album.cover = result.data.album.cover;
             this.$store.state.queue.add(i);
         },
         search_query(index) {
@@ -68,14 +68,14 @@ export default {
                     id: "" + i.id,
                 }
             })
-            data.album_img = result.data.album.cover;
+            data.album.cover = result.data.album.cover
             this.$store.state.trylisten(data);
         },
         handle_page_change(val) {
-            this.$router.push(`./search/list?key=${this.key}&page=${val}`);
+            this.$router.push(`/search/list?key=${this.key}&page=${val}`);
         },
         display_artist(item) {
-            this.$router.push(`./artist?id=${item.id}`);
+            this.$router.push(`/artist?id=${item.id}`);
         },
     },
     created(){

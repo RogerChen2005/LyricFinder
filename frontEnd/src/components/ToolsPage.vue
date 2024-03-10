@@ -100,7 +100,7 @@ export default {
   },
   data() {
     return {
-      settings: this.$store.state.settings,
+      settings: Object.assign({},this.$store.state.settings),
       options: [{
         label: "歌手 - 歌名",
         value: 0
@@ -165,6 +165,7 @@ export default {
       return;
     },
     update() {
+      this.$store.state.settings = this.settings;
       localStorage.setItem('settings', JSON.stringify(this.settings));
       ElMessage({
         message: '设置已更新',
