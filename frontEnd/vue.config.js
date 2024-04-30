@@ -4,9 +4,10 @@ const path = require('path');
 module.exports = defineConfig({
   transpileDependencies: true,
   publicPath:"./",
+  outputDir:"static",
   devServer:{
-    proxy:"http://127.0.0.1:3030"
-    // proxy:"https://121.43.231.63/lf"
+    // proxy:"http://127.0.0.1:3030"
+    proxy:"https://app.cast1e.top/lf"
   },  chainWebpack: config => {
     config.module
       .rule('markdown')

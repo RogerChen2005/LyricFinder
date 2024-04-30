@@ -67,7 +67,7 @@ function query_finder(key, query) {
 export default {
   name: 'MainPage',
   components: {
-    MusicPlayer,
+    MusicPlayer
   },
   data() {
     return {
@@ -125,16 +125,6 @@ export default {
       this.current_tab = index;
       this.$router.push(tabs[index - 1]);
     },
-    trylisten(data) {
-      this.$refs.player.init(data);
-    },
-    listen_all(queue) {
-      this.$refs.player.listen_all(queue);
-    }
-  },
-  created() {
-    this.$store.state.trylisten = this.trylisten;
-    this.$store.state.listen_all = this.listen_all;
   }
 }
 </script>

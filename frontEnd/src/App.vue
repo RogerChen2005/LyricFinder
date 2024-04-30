@@ -19,7 +19,7 @@ export default {
         let settings = JSON.parse(localStorage.getItem("settings"));
         this.$store.state.settings = settings ? settings : default_settings;
         if (!cookie) {
-            this.$router.push('/login')
+            this.$router.push('/login');
         }
     }
 }
@@ -57,12 +57,17 @@ html.dark body {
 }
 
 html {
+    --bg-color-solid:#e9e9e9;
+    --bg-color-solid-hover:#d5d5d5;
     --bg-color: #fbfbfb;
     --text-color: #464646;
+    --text-color-light: #f8f8f8;
     --bd-color: #bbbbbb99;
 }
 
 html.dark {
+    --bg-color-solid:#2d2d2d;
+    --bg-color-solid-hover:#4f4f4f;
     --bg-color: #2a2a2a;
     --text-color: #c0c0c0;
     --bd-color: #7f7f7f7c;

@@ -1,21 +1,18 @@
 <template>
-    <transition name="drawer-show">
-        <div v-if="list_show" class="drawer-container" tabindex="-1" @focus="list_show = false">
+    <!-- <transition name="drawer-show">
+        
+    </transition> -->
+    <CDrawer v-model:visible="list_show">
+        <template #content>
             <div id="drawer" class="drawer-body" tabindex="-1">
-                <div style="display: flex;justify-content: space-between;height: 80px;">
-                    <div>
-                        <h2>播放列表</h2>
-                    </div>
-                    <div>
-                        <box-icon color='var(--text-color)' style="cursor: pointer;" @click="list_show = false" name='x'
-                            size='lg' animation='tada-hover'></box-icon>
-                    </div>
+                <div style="height: 80px;">
+                    <h2>播放列表</h2>
                 </div>
                 <el-table :data="playlist" style="width: 100%;">
                     <el-table-column fixed="left" label="" width="30">
                         <template #default="header">
-                            <box-icon name='volume-full' v-if="current_playing === header.$index" color='var(--text-color)'
-                                size="xs"></box-icon>
+                            <box-icon name='volume-full' v-if="current_playing === header.$index"
+                                color='var(--text-color)' size="xs"></box-icon>
                         </template>
                     </el-table-column>
                     <el-table-column type="index" />
@@ -44,8 +41,51 @@
                     </el-table-column>
                 </el-table>
             </div>
-        </div>
-    </transition>
+        </template>
+    </CDrawer>
+    <CPage ref="fullscreen" v-model:visible="full_screened" :bg="data.album ? `url(${data.album.cover})` : ''"
+        @close="handle_page_close">
+        <template #left>
+            <img id="full-cover" :src="data.album ? data.album.cover : null">
+            <div class="full-title" style="text-align: left">
+                <div id="full-title">{{ data.title }}</div>
+                <div id="full-artist"
+                    @click="() => { $refs.fullscreen.handleClose(); display_artist(data.artists[0]) }">
+                    {{ data.artists[0].name }}
+                </div>
+            </div>
+            <div class="full-slider colbox">
+                <div>{{ toTime(current) }}</div>
+                <input id="full-input-range" type="range" :value="current" :max="data.duration"
+                    @input="(e) => changeLong(Number(e.target.value))" />
+                <div>{{ toTime(data.duration) }}</div>
+            </div>
+            <div class="full-controllers">
+                <box-icon name='skip-previous' @click="prev" color='var(--text-color-light)' size='80px'></box-icon>
+                <box-icon :name='isPlaying' @click="plays" color='var(--text-color-light)' size='80px'></box-icon>
+                <box-icon name='skip-next' @click="next" color='var(--text-color-light)' size='80px'></box-icon>
+            </div>
+            <div class="full-settings">
+                <div style="cursor: pointer;" class="colbox">
+                    <box-icon v-if="mode < 2" name='repeat' type='solid' @click="change_mode"
+                        color='var(--text-color-light)'></box-icon>
+                    <box-icon v-if="mode === 2" name='shuffle' type='solid' @click="change_mode"
+                        color='var(--text-color-light)'></box-icon>
+                    <div v-if="mode === 1">1</div>
+                </div>
+                <box-icon name='playlist' type='solid' @click="list_show = true;"
+                    style="margin-right: 10px;cursor: pointer;" color='var(--text-color-light)'></box-icon>
+            </div>
+        </template>
+        <template #right>
+            <div id="lyrics" ref="lyrics">
+                <div class="lyric" v-for="l in data.lyric" :key="l.t" @click="() => { play(); changeLong(l.t); }">
+                    <div> {{ l.c }}</div>
+                    <div class="full-translate-lyric"> {{ l.tc }}</div>
+                </div>
+            </div>
+        </template>
+    </CPage>
     <div ref="player" id="player">
         <div id="slider">
             <el-slider size="small" v-model="current" :max="data.duration" :show-tooltip="false"
@@ -55,10 +95,13 @@
             @pause="is_stop = true" @play="is_stop = false" @ended="ended"></audio>
         <div id="player-ui">
             <div id="left">
-                <img id="album-cover" :src="data.album ? data.album.cover : null">
+                <img @click="open_fullscreen" id="album-cover" :src="data.album ? data.album.cover : null">
                 <div style="text-align: left;width: 100%;overflow: hidden;">
                     <p class="hide_text" id="title">{{ data.title }}</p>
-                    <p class="hide_text" id="artist">{{ data.artists ? data.artists[0].name : "选择一首歌曲播放" }}</p>
+                    <div class="hide_text" id="artist">
+                        <el-link v-if="data.artists" @click="display_artist(data.artists[0])">{{ data.artists[0].name
+                            }}</el-link>
+                    </div>
                 </div>
             </div>
             <div id="mid">
@@ -94,9 +137,14 @@
 
 <script>
 import { ElMessage } from 'element-plus'
+import CDrawer from './UI/CDrawer.vue'
+import CPage from './UI/CPage.vue'
 
 export default {
     name: 'MusicPlayer',
+    components: {
+        CDrawer, CPage
+    },
     props: {
     },
     data() {
@@ -113,10 +161,82 @@ export default {
             playlist: [],
             current_playing: 0,
             mode: 0,
-            modes: ['列表循环', '单曲循环', '随机播放']
+            modes: ['列表循环', '单曲循环', '随机播放'],
+            full_screened: false
         }
     },
     methods: {
+        open_fullscreen() {
+            if (!this.data.lyric) {
+                this.$axios.post("/func", {
+                    target: "get_lyric",
+                    data: {
+                        id: this.data.id
+                    }
+                }).then((res) => {
+                    this.data.lyric = [];
+                    if (typeof res.data.lyric === 'string') {
+                        let arr = res.data.lyric.split('\n');
+                        for (let ele of arr) {
+                            let first_index = ele.indexOf('[');
+                            let second_index = ele.indexOf(']');
+                            if (first_index != undefined && second_index) {
+                                let time = ele.substring(first_index + 1, second_index);
+                                let third_index = time.indexOf(':');
+                                let t = Number(time.substring(0, third_index)) * 60 + Number(time.substring(third_index + 1));
+                                this.data.lyric.push({ t, c: ele.substring(second_index + 1) });
+                            }
+                            else this.data.lyric.push({ t: 0, c: ele })
+                        }
+                        if (res.data.tlyric) {
+                            let arr_t = res.data.tlyric.split('\n');
+                            let index = 0;
+                            for (let ele of arr_t) {
+                                let first_index = ele.indexOf('[');
+                                let second_index = ele.indexOf(']');
+                                if (first_index != undefined && second_index) {
+                                    let time = ele.substring(first_index + 1, second_index);
+                                    let third_index = time.indexOf(':');
+                                    let t = Number(time.substring(0, third_index)) * 60 + Number(time.substring(third_index + 1));
+                                    while(index < this.data.lyric.length - 1 && this.data.lyric[index+1].t <= t) index++;
+                                    this.data.lyric[index].tc = ele.substring(second_index + 1);
+                                }
+                            }
+                        }
+                    }
+                    this.render_lyric();
+                });
+            }
+            else this.render_lyric();
+        },
+        render_lyric() {
+            this.full_screened = true;
+            this.currentLyric = 0;
+            setTimeout(()=>this.$refs.lyrics.children[this.currentLyric].classList.add('current-lyric'),0)
+            this.lyricSelector = setInterval(() => {
+                if (this.isPlaying === 'pause') {
+                    let ct = parseInt(this.$refs.audio.currentTime);
+                    let cl = this.currentLyric;
+                    let next = cl;
+                    while (this.data.lyric[next] && ct > this.data.lyric[next].t) next++;
+                    if (next > cl + 1) {
+                        this.$refs.lyrics.children[cl].classList.remove('current-lyric');
+                        this.$refs.lyrics.children[next - 1].classList.add('current-lyric');
+                        this.$refs.lyrics.scrollTo({
+                            top: this.$refs.lyrics.children[next - 1].offsetTop - 200,
+                            behavior: "smooth"
+                        })
+                        this.currentLyric = next - 1;
+                    }
+                }
+            }, 100)
+        },
+        handle_page_close() {
+            if (this.lyricSelector) {
+                clearInterval(this.lyricSelector);
+                console.log('close');
+            }
+        },
         toTime(sec) {
             let s = sec % 60 < 10 ? ('0' + sec % 60) : sec % 60
             let min = Math.floor(sec / 60) < 10 ? ('0' + Math.floor(sec / 60)) : Math.floor(sec / 60)
@@ -136,9 +256,35 @@ export default {
                 this.isPlaying = "play";
             }
         },
+        find_index(id){
+            for(let index in this.playlist){
+                if(this.playlist[index].id === id) return index;
+            }
+            return -1;
+        },
         init(data) {
-            this.playlist.push(data);
-            this.change(this.playlist.length - 1);
+            if(data.id){
+                let index = this.find_index(data.id);
+                if(index === -1){
+                    this.playlist.push(data);
+                    this.change(this.playlist.length - 1);
+                }
+                else this.change(index);
+            }
+        },
+        nextPlay(data){
+            if(data.id){
+                let index = this.find_index(data.id);
+                if(index === -1){
+                    this.playlist.splice(this.current_playing+1,0,data);
+                    ElMessage("已添加至播放列表");
+                }
+                else if(index != this.current_playing){
+                    let song = this.playlist.splice(index,1);
+                    if(index < this.current_playing) this.current_playing -=1;
+                    this.playlist.splice(this.current_playing+1,0,song[0]);
+                }
+            }
         },
         change(index) {
             this.isPlaying = "pause";
@@ -148,8 +294,7 @@ export default {
             if (settings && settings.quality) {
                 quality = settings.quality;
             }
-            console.log(quality);
-            this.$axios.post("func",{
+            this.$axios.post("func", {
                 target: "get_song_url",
                 data: {
                     id: this.playlist[index].id,
@@ -160,6 +305,7 @@ export default {
                 this.data.music_url = result.data.url;
                 this.current_playing = index;
                 setTimeout(() => this.apply_media_session(this.data), 0)
+                if (this.full_screened) this.open_fullscreen();
                 this.show();
             })
         },
@@ -197,7 +343,6 @@ export default {
         next() {
             if (this.mode === 2) {
                 let rand = parseInt(Math.random() * (this.playlist.length - 1) + 1);
-                console.log(rand, this.playlist.length);
                 this.change((this.current_playing + rand) % this.playlist.length);
             }
             else this.change((this.current_playing + 1) % this.playlist.length);
@@ -205,7 +350,6 @@ export default {
         prev() {
             if (this.mode === 2) {
                 let rand = parseInt(Math.random() * (this.playlist.length - 1) + 1);
-                console.log(rand, this.playlist.length);
                 this.change((this.current_playing + rand) % this.playlist.length);
             }
             else {
@@ -282,11 +426,120 @@ export default {
         }
     },
     created() {
+        this.$store.state.player = {
+            listen:(data)=>this.init(data),
+            listen_all:(data)=>this.listen_all(data),
+            next:(data)=>this.nextPlay(data),
+        }
     }
 }
 </script>
 
 <style scoped>
+#full-input-range {
+    margin: 5px;
+    width: calc(100% - 10px);
+    opacity: 0.3;
+    transition: .3s;
+}
+
+#full-input-range::-webkit-slider-runnable-track {
+    -webkit-appearance: none;
+    appearance: none;
+    outline: none;
+    border: solid 1px var(--bd-color);
+    border-radius: 3px;
+    /* height: 12px; */
+    background-color: transparent;
+    /* backdrop-filter: blur(5px); */
+    opacity: 0.8;
+}
+
+#full-input-range:hover {
+    filter: brightness(110%);
+}
+
+#full-input-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    outline: none;
+    opacity: 0;
+}
+
+.full-controllers {
+    display: flex;
+    justify-content: space-between;
+}
+
+#full-cover {
+    margin: 5px;
+    border-radius: 10px;
+    width: calc(100% - 10px);
+}
+
+#full-title {
+    font-size: 35px;
+    font-weight: 700;
+}
+
+#full-artist {
+    font-size: 20px;
+    font-weight: 400;
+    cursor: pointer;
+}
+
+#full-artist:hover {
+    text-decoration: underline;
+}
+
+.full-settings {
+    display: flex;
+    justify-content: space-around;
+}
+
+.full-slider {
+    color: #d0d0d0;
+    transform: translate(0, 10px);
+}
+
+#lyrics {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+}
+
+#lyrics::-webkit-scrollbar {
+    display: none;
+}
+
+.lyric {
+    width: fit-content;
+    border-radius: 5px;
+    font-weight: 200;
+    font-size: 40px;
+    margin-bottom: 25px;
+    filter: blur(3px);
+    transition: .3s;
+    transform: scale(0.8) translate(-10%, 0);
+    padding: 10px;
+    cursor: default;
+}
+
+.lyric:hover {
+    background-color: #ffffff19;
+}
+
+.current-lyric {
+    filter: none;
+    transform: scale(1);
+    font-weight: 700;
+}
+
+.full-translate-lyric{
+    font-size: 30px;
+    margin-top: 5px;
+}
+
 #player {
     width: 60%;
     height: 80px;
@@ -334,6 +587,12 @@ html.dark #player {
     width: 55px;
     border-radius: 5px;
     margin-left: 10px;
+    cursor: pointer;
+    transition: .5s;
+}
+
+#player-ui #album-cover:hover {
+    filter: blur(2px) brightness(80%);
 }
 
 #player-ui audio {
@@ -397,52 +656,11 @@ html.dark #player {
     transform: translateY(-9px);
 }
 
-.drawer-container {
-    position: absolute;
-    top: 0;
-    left: 0;
+.drawer-body {
     width: 100%;
     height: 100%;
-    z-index: 2002;
-    backdrop-filter: blur(10px);
-    transition: all .5s ease-in-out;
-    /* background: rgba(158, 158, 158, 0.1); */
-    background: transparent;
-}
-
-.drawer-body {
-    position: absolute;
-    right: 0;
-    padding: 20px;
-    width: 50%;
-    height: 75%;
-    border-radius: 5px;
-    top: 5%;
-    /* transition: .5s cubic-bezier(.25, .1, .3, 1.5); */
-    transition: .5s ease-out;
-    background-color: var(--bg-color);
-}
-
-.drawer-show-enter-from,
-.drawer-show-leave-to {
-    background: transparent;
-    backdrop-filter: blur(0px);
-}
-
-.drawer-show-enter-from .drawer-body,
-.drawer-show-leave-to .drawer-body {
-    transform: translateX(100%);
-}
-
-.drawer-show-enter-to,
-.drawer-show-leave-from {
-    background: transparent;
-    backdrop-filter: blur(10px);
-}
-
-.drawer-show-enter-to .drawer-body,
-.drawer-show-leave-from .drawer-body {
-    transform: translateX(0);
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 #show_button {

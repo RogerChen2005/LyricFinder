@@ -5,31 +5,7 @@
             <div class="title">
                 <div>为你推荐的单曲</div>
             </div>
-            <el-table :data="songs" style="width: 100%;">
-                <el-table-column type="index" />
-                <el-table-column prop="title" label="名称" />
-                <el-table-column prop="artists" label="歌手">
-                    <template #default="scope">
-                        <div v-for="i in scope.row.artists" :key="i.id">
-                            <el-link @click="display_artist(i)">{{ i.name }}</el-link>
-                        </div>
-                    </template>
-                </el-table-column>
-                <el-table-column prop="album" label="专辑">
-                    <template #default="scope">
-                        <el-link @click="display_album(scope.row.album)">{{ scope.row.album.name }}</el-link>
-                    </template>
-                </el-table-column>
-                <el-table-column fixed="right" label="操作">
-                    <template #default="scope">
-                        <div style="display: flex;flex-direction: row;">
-                            <el-button link type="warning" @click="listen_temporary(scope.$index)"
-                                size="small">播放</el-button>
-                            <el-button link type="primary" @click="add(scope.$index)" size="small">下载</el-button>
-                        </div>
-                    </template>
-                </el-table-column>
-            </el-table>
+            <SongTable :list="songs"></SongTable>
             <!-- <div class="title">
             <div>专辑</div><el-link :href="`/#/search/album?key=${key}&page=1`">{{ moreText.album }}</el-link>
         </div>
@@ -62,9 +38,13 @@
 
 <script>
 import {ElNotification} from 'element-plus'
+import SongTable from './display/SongTable.vue';
 
 export default {
     name: 'HomePage',
+    components:{
+        SongTable
+    },
     data() {
         return {
             loading: false,
@@ -73,36 +53,8 @@ export default {
         }
     },
     methods: {
-        display_album(item) {
-            this.$router.push(`./album?id=${item.id}`);
-        },
         display_list(item) {
             this.$router.push(`./playlist?id=${item.id}`);
-        },
-        display_artist(item) {
-            this.$router.push(`./artist?id=${item.id}`);
-        },
-        async listen_temporary(i) {
-            let data = this.songs[i];
-            let result = await this.$axios.post("func", {
-                target: "get_song_detail",
-                data: {
-                    id: "" + data.id,
-                }
-            })
-            data.album_img = result.data.album_img;
-            this.$store.state.trylisten(data);
-        },
-        async add(index) {
-            let item = this.songs[index];
-            let result = await this.$axios.post("func", {
-                target: "get_song_detail",
-                data: {
-                    id: "" + item.id,
-                }
-            })
-            item.album_img = result.data.album_img;
-            this.$store.state.queue.add(item);
         },
     },
     created() {

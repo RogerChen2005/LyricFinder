@@ -3,30 +3,7 @@
         <div class="title">
             <div>单曲</div><el-link :href="`./#/search/song?key=${key}&page=1`">{{ moreText.song }}</el-link>
         </div>
-        <el-table :data="songs" style="width: 100%;">
-            <el-table-column type="index" />
-            <el-table-column prop="title" label="名称" />
-            <el-table-column prop="artists" label="歌手">
-                <template #default="scope">
-                    <div v-for="i in scope.row.artists" :key="i.id">
-                        <el-link @click="display_artist(i)">{{ i.name }}</el-link>
-                    </div>
-                </template>
-            </el-table-column>
-            <el-table-column prop="album" label="专辑">
-                <template #default="scope">
-                    <el-link @click="display_album(scope.row.album)">{{ scope.row.album.name }}</el-link>
-                </template>
-            </el-table-column>
-            <el-table-column fixed="right" label="操作">
-                <template #default="scope">
-                    <div style="display: flex;flex-direction: row;">
-                        <el-button link type="warning" @click="listen_temporary(scope.$index)" size="small">播放</el-button>
-                        <el-button link type="primary" @click="add(scope.$index)" size="small">下载</el-button>
-                    </div>
-                </template>
-            </el-table-column>
-        </el-table>
+        <SongTable :list="songs"></SongTable>
         <div class="title">
             <div>专辑</div><el-link :href="`./#/search/album?key=${key}&page=1`">{{ moreText.album }}</el-link>
         </div>
@@ -71,9 +48,12 @@
 </template>
 
 <script>
-
+import SongTable from '../display/SongTable.vue';
 export default {
     name: 'SearchPage',
+    components:{
+        SongTable
+    },
     data() {
         return {
             songs: [],
@@ -117,17 +97,6 @@ export default {
                 }
             );
 
-        },
-        async listen_temporary(i) {
-            let data = this.songs[i];
-            let result = await this.$axios.post("func",{
-                target: "get_song_detail",
-                data: {
-                    id: "" + data.id,
-                }
-            })
-            data.album.cover = result.data.album.cover
-            this.$store.state.trylisten(data);
         },
         display_album(item) {
             this.$router.push(`/album?id=${item.id}`);

@@ -1,4 +1,4 @@
-const { homepage_block_page,artist_album, artists, search, song_url_v1, song_detail, login_qr_key, login_qr_create, login_qr_check, user_account, user_playlist, playlist_track_all, playlist_detail, album } = require("./api.js")
+const { lyric,homepage_block_page,artist_album, artists, search, song_url_v1, song_detail, login_qr_key, login_qr_create, login_qr_check, user_account, user_playlist, playlist_track_all, playlist_detail, album } = require("./api.js")
 const { download, get_folder_songs } = require('./download.js')
 const fs = require('fs');
 const cookie = String(fs.readFileSync("./cookies/cookie.txt"));
@@ -180,7 +180,6 @@ async function get_song_detail(res, query) {
 }
 
 async function get_song_url(res, query) {
-    console.log(query);
     let result = await song_url_v1({
         id: query.id,
         level: query.level,
@@ -434,10 +433,28 @@ async function discover(res,query){
     };
 }
 
+async function get_lyric(res,query){
+    let result = await lyric({
+        id: query.id
+    })
+    if(result.body){
+        let data = {};
+        if(result.body.lrc.lyric) data.lyric = result.body.lrc.lyric;
+        if(result.body.tlyric) {
+            if(result.body.tlyric.lyric) data.tlyric = result.body.tlyric.lyric;
+        }
+        return JSON.stringify(data);
+    }
+    else {
+        res.status(404);
+        return ""
+    };
+}
+
 module.exports = {
     search_all, search_list, search_song, search_album, search_artist,
     get_song_url, get_artist_album, get_song_detail,
     generate_qr_code, qr_check, user_inf, get_playlist,
     get_list_song, get_folder_songs, songlist_detail,
-    get_album, artist_info,discover
+    get_album, artist_info,discover,get_lyric
 }

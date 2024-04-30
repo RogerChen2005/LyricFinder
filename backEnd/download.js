@@ -43,7 +43,7 @@ module.exports.lyric_download = async function (data, res) {
     })
     let save_name = create_file_name(query, options, 'lrc');
     let save_path = path.join(temp_path, save_name);
-    fs.writeFileSync(save_path, JSON.stringify(result.body));
+    // fs.writeFileSync(save_path, JSON.stringify(result.body));
     try {
         if (options.tlyric && result.body.tlyric && result.body.tlyric.lyric) {
             let res = [];

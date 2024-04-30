@@ -12,31 +12,7 @@
             </div>
             <el-tabs v-model="activeName">
                 <el-tab-pane label="歌曲" name="song">
-                    <el-table :data="list" style="width: 100%;">
-                        <el-table-column type="index" />
-                        <el-table-column prop="title" label="名称" />
-                        <el-table-column prop="artists" label="歌手">
-                            <template #default="scope">
-                                <div v-for="i in scope.row.artists" :key="i.id">
-                                    <el-link @click="display_artist(i)">{{ i.name }}</el-link>
-                                </div>
-                            </template>
-                        </el-table-column>
-                        <el-table-column prop="album" label="专辑">
-                            <template #default="scope">
-                                <el-link>{{ scope.row.album.name }}</el-link>
-                            </template>
-                        </el-table-column>
-                        <el-table-column fixed="right" label="操作">
-                            <template #default="scope">
-                                <div style="display: flex;flex-direction: row;">
-                                    <el-button link type="warning" @click="listen_temporary(scope.$index)"
-                                        size="small">播放</el-button>
-                                    <el-button link type="primary" @click="add(scope.$index)" size="small">下载</el-button>
-                                </div>
-                            </template>
-                        </el-table-column>
-                    </el-table>
+                    <SongTable :list="list"></SongTable>
                 </el-tab-pane>
                 <el-tab-pane label="简介" name="description">
                     {{ detail.description }}
@@ -47,8 +23,12 @@
 </template>
 
 <script>
+import SongTable from './SongTable.vue';
 export default {
     name: "albumPage",
+    components:{
+        SongTable
+    },
     data() {
         return {
             id: 0,
@@ -71,7 +51,7 @@ export default {
             this.$store.state.queue.add(this.list[index]);
         },
         listen_all() {
-            this.$store.state.listen_all(this.list);
+            this.$store.state.player.listen_all(this.list);
         },
         init() {
             this.loading = true;
