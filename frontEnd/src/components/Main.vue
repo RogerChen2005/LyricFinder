@@ -51,7 +51,6 @@
 
 <script>
 import MusicPlayer from './MusicPlayer.vue'
-import axios from 'axios';
 const tabs = ['/', '/list', '/download', '/tools', '/user', '/about'];
 
 function query_finder(key, query) {
@@ -104,22 +103,6 @@ export default {
         }
       }
       this.$router.push(`/search/all?key=${this.search_text}`);
-    },
-    listen(id) {
-      axios.post('./func', {
-        target: 'get_song_detail',
-        data: {
-          id: id
-        }
-      }).then((res) => {
-        let data = res.data;
-        this.$store.state.trylisten({
-          id: data.id,
-          title: data.title,
-          artists: data.artists,
-          album: data.album,
-        })
-      })
     },
     onHandleSelect: function (index) {
       this.current_tab = index;

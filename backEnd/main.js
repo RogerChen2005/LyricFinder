@@ -16,22 +16,39 @@ app.use(express.static('static'));
 app.post('/func', async (req, res, next) => {
   let body = req.body;
   if (functions[body.target]) {
-    res.end(await functions[body.target](res, body.data));
-    console.log(`[${new Date().toTimeString()}] ${body.target}`);
+    try{
+      res.end(await functions[body.target](res, body.data));
+      console.log(`[${new Date().toTimeString()}] ${body.target}`);
+    }catch(e){
+      console.log(e)
+      console.log(`[${new Date().toTimeString()}] Error Handling ${body.target}`);
+    }
   }
   else res.status(404).end();
   next();
 })
 
 app.post('/download', async (req, res, next) => {
-  res.end(await download[req.body.target](req.body.data, res));
-  console.log(`[${new Date().toTimeString()}] ${req.body.target}`);
+  try{
+    res.end(await download[req.body.target](req.body.data, res));
+    console.log(`[${new Date().toTimeString()}] ${req.body.target}`);
+  }
+  catch(e){
+    console.log(e)
+    console.log(`[${new Date().toTimeString()}] Error Handling ${req.body.target}`);
+  }
   next();
 })
 
-app.post('/file', (req, res) => {
-  download.get_file(req.body, res);
-  return;
+app.post('/file', (req, res,next) => {
+  try{
+    download.get_file(req.body, res);
+  }
+  catch(e){
+    console.log(e)
+    console.log(`[${new Date().toTimeString()}] Error Handling /file`);
+  }
+  next();
 })
 
 app.listen(3030, () => {

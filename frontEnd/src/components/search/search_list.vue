@@ -49,7 +49,6 @@ export default {
                     this.loading = false;
                 }
             );
-            
         },
         handle_page_change(val) {
             this.$router.push(`/search/list?key=${this.key}&page=${val}`);

@@ -67,17 +67,6 @@ export default {
         }
     },
     methods: {
-        async add(index) {
-            let item = this.songs[index];
-            let result = await this.$axios.post("func", {
-                target: "get_song_detail",
-                data: {
-                    id: "" + item.id,
-                }
-            })
-            item.album.cover = result.data.album.cover;
-            this.$store.state.queue.add(item);
-        },
         search_query() {
             this.search_loading = true;
             this.$axios.post("func",{

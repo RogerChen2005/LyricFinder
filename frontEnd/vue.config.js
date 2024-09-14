@@ -6,8 +6,8 @@ module.exports = defineConfig({
   publicPath:"./",
   outputDir:"static",
   devServer:{
-    // proxy:"http://127.0.0.1:3030"
-    proxy:"https://app.cast1e.top/lf"
+    proxy:"http://127.0.0.1:3030"
+    // proxy:"https://app.cast1e.top/lf"
   },  chainWebpack: config => {
     config.module
       .rule('markdown')

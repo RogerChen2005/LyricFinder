@@ -73,7 +73,14 @@ export default {
             this.data = data;
             this.$refs.menu.handleOpen(x, y);
         },
-        listen(data) {
+        async listen(data) {
+            let result = await this.$axios.post("func",{
+                target: "get_song_detail",
+                data: {
+                    id: ""+data.id,
+                }
+            })
+            data.album.cover = result.data.album.cover
             this.$store.state.player.listen(data)
         },
         display_album(item) {

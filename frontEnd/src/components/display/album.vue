@@ -43,13 +43,6 @@ export default {
         }
     },
     methods: {
-        async listen_temporary(index) {
-            let data = this.list[index];
-            this.$store.state.trylisten(data);
-        },
-        add(index) {
-            this.$store.state.queue.add(this.list[index]);
-        },
         listen_all() {
             this.$store.state.player.listen_all(this.list);
         },
