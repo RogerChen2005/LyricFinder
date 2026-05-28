@@ -9,11 +9,8 @@ interface ProcMap {
 
 const proc: ProcMap = {
   discover(callback, err) {
-    axios.post('./func', {
-      target: 'discover',
-      data: {
-        cookie: localStorage.getItem('cookie')
-      }
+    axios.post('/api/discover', {
+      cookie: localStorage.getItem('cookie')
     }).then((response) => {
       callback({
         songs: response.data.songs,
@@ -24,11 +21,8 @@ const proc: ProcMap = {
     })
   },
   profile(callback, err) {
-    axios.post('./func', {
-      target: 'user_inf',
-      data: {
-        cookie: localStorage.getItem('cookie')
-      }
+    axios.post('/api/auth/user', {
+      cookie: localStorage.getItem('cookie')
     }).then((res) => {
       callback({ profile: res.data })
     }).catch((reason) => {
@@ -37,12 +31,9 @@ const proc: ProcMap = {
   },
   private_list(callback, err) {
     this.gets('profile', (data) => {
-      axios.post('./func', {
-        target: 'get_playlist',
-        data: {
-          uid: (data.profile as Record<string, unknown>).userid,
-          cookie: localStorage.getItem('cookie')
-        }
+      axios.post('/api/playlist', {
+        uid: (data.profile as Record<string, unknown>).userid,
+        cookie: localStorage.getItem('cookie')
       }).then((res) => {
         callback({ list: res.data.list })
       }).catch((reason) => {

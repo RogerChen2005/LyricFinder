@@ -35,12 +35,9 @@ const loading = ref(false)
 
 function search_query(index: number) {
     loading.value = true
-    axios.post('func', {
-        target: 'search_album',
-        data: {
-            key: key.value,
-            offset: (index - 1) * 30
-        }
+    axios.post('/api/search/album', {
+        key: key.value,
+        offset: (index - 1) * 30
     }).then((response) => {
         albums.value = response.data.albums
         count.value = response.data.count

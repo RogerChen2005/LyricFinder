@@ -92,15 +92,15 @@ class Task {
     if (!settings) settings = default_setting
     for (const i in this.queue) {
       const arr: string[] = []
-      let result = await axios.post('./download', {
-        target: 'music_download',
-        data: { query: this.queue[i], options: settings }
+      let result = await axios.post('/api/download/music', {
+        query: this.queue[i],
+        options: settings
       })
       arr.push(result.data.filename)
       if (settings.lyric) {
-        result = await axios.post('./download', {
-          target: 'lyric_download',
-          data: { query: this.queue[i], options: settings }
+        result = await axios.post('/api/download/lyric', {
+          query: this.queue[i],
+          options: settings
         })
         arr.push(result.data.filename)
       }
@@ -120,7 +120,7 @@ class Task {
         method: 'post',
         responseType: 'blob',
         data: { filename: query[i] },
-        url: './file',
+        url: '/api/file',
         onDownloadProgress(ProgressEvent) {
           const percent = Math.floor(ProgressEvent.loaded / (ProgressEvent.total ?? 1) * 100)
           queue[index].prog = percent

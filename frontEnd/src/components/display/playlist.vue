@@ -38,13 +38,10 @@ const songlist = ref<any>({})
 
 function handle_drawer_page_change(index: number) {
     loading.value = true
-    axios.post('func', {
-        target: 'get_list_song',
-        data: {
-            id: id.value,
-            offset: (index - 1) * 30,
-            cookie: localStorage.getItem('cookie')
-        }
+    axios.post('/api/playlist/song', {
+        id: id.value,
+        offset: (index - 1) * 30,
+        cookie: localStorage.getItem('cookie')
     }).then((res) => {
         index_start.value = index * 30
         list.value = res.data.songs
@@ -57,12 +54,9 @@ function listen_all() {
 }
 
 function init() {
-    axios.post('func', {
-        target: 'songlist_detail',
-        data: {
-            id: id.value,
-            cookie: localStorage.getItem('cookie')
-        }
+    axios.post('/api/playlist/detail', {
+        id: id.value,
+        cookie: localStorage.getItem('cookie')
     }).then((res) => {
         songlist.value = res.data
         handle_drawer_page_change(1)

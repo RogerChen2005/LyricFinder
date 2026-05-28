@@ -45,10 +45,7 @@ function listen_all() {
 
 function init() {
     loading.value = true
-    axios.post('func', {
-        target: 'get_album',
-        data: { id: id.value }
-    }).then((res) => {
+    axios.post('/api/album', { id: id.value }).then((res) => {
         detail.value = res.data.detail
         list.value = res.data.songs
         loading.value = false

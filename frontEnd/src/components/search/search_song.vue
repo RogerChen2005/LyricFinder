@@ -51,23 +51,16 @@ const key = ref('')
 const page = ref(1)
 
 async function add(i: any) {
-    const result = await axios.post('func', {
-        target: 'get_song_detail',
-        data: { id: '' + i.id }
-    })
+    const result = await axios.post('/api/song/detail', { id: '' + i.id })
     ;(i.album as any).cover = result.data.album.cover
     store.queue?.add(i)
 }
 
 function search_query(index: number) {
     search_loading.value = true
-    axios.post('func', {
-        target: 'search_song',
-        data: {
-            key: key.value,
-            offset: (index - 1) * 30,
-            type: 1
-        }
+    axios.post('/api/search/song', {
+        key: key.value,
+        offset: (index - 1) * 30
     }).then((response) => {
         searchlist.value = response.data.songs
         count.value = response.data.count
@@ -76,10 +69,7 @@ function search_query(index: number) {
 }
 
 async function listen_temporary(i: any) {
-    const result = await axios.post('func', {
-        target: 'get_song_detail',
-        data: { id: '' + i.id }
-    })
+    const result = await axios.post('/api/song/detail', { id: '' + i.id })
     ;(i.album as any).cover = result.data.album.cover
     ;(store as unknown as Record<string, Function>).trylisten?.(i)
 }

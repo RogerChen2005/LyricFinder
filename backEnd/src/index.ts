@@ -1,8 +1,13 @@
 import Fastify from 'fastify'
 import { PORT } from './config'
-import funcRoutes from './routes/func.routes'
+import searchRoutes from './routes/search.routes'
+import songRoutes from './routes/song.routes'
+import playlistRoutes from './routes/playlist.routes'
+import albumRoutes from './routes/album.routes'
+import artistRoutes from './routes/artist.routes'
+import discoverRoutes from './routes/discover.routes'
+import authRoutes from './routes/auth.routes'
 import downloadRoutes from './routes/download.routes'
-import fileRoutes from './routes/file.routes'
 
 async function start() {
   const app = Fastify({ logger: true })
@@ -19,9 +24,14 @@ async function start() {
     },
   )
 
-  await app.register(funcRoutes)
+  await app.register(searchRoutes)
+  await app.register(songRoutes)
+  await app.register(playlistRoutes)
+  await app.register(albumRoutes)
+  await app.register(artistRoutes)
+  await app.register(discoverRoutes)
+  await app.register(authRoutes)
   await app.register(downloadRoutes)
-  await app.register(fileRoutes)
 
   try {
     await app.listen({ port: PORT, host: '127.0.0.1' })

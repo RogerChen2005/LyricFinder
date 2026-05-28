@@ -88,10 +88,7 @@ function open(x: number, y: number, item: SongItem) {
 }
 
 async function listen(item: SongItem) {
-    const result = await axios.post('func', {
-        target: 'get_song_detail',
-        data: { id: '' + item.id }
-    })
+    const result = await axios.post('/api/song/detail', { id: '' + item.id })
     item.album.cover = result.data.album.cover
     ;(store as unknown as Record<string, Record<string, Function>>).player?.listen(item)
 }

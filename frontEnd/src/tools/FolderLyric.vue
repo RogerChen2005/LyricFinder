@@ -86,10 +86,7 @@ let socket: WebSocket | null = null
 async function select_folder() {
     path.value = await (window as unknown as { electronAPI: { filePicker: () => Promise<string> } }).electronAPI.filePicker()
     loading.value = true
-    const result = await axios.post('http://localhost:3030/func', {
-        target: 'get_folder_songs',
-        data: { path: path.value }
-    })
+    const result = await axios.post('/api/folder/songs', { path: path.value })
     queue.value = result.data.queue
     loading.value = false
 }
@@ -108,17 +105,14 @@ function count_handler(message: MessageEvent) {
 function download() {
     const options = JSON.parse(localStorage.getItem('settings') ?? 'null')
     task_remain.value = queue.value.length
-    axios.post('http://localhost:3030/func', {
-        target: 'download',
-        data: {
-            queue: queue.value,
-            options: {
-                classify: false,
-                use_origin_name: true,
-                path: path.value,
-                song: false, cover: false, lyric: true,
-                tlyric: options ? options.tlyric : true
-            }
+    axios.post('/api/folder/download', {
+        queue: queue.value,
+        options: {
+            classify: false,
+            use_origin_name: true,
+            path: path.value,
+            song: false, cover: false, lyric: true,
+            tlyric: options ? options.tlyric : true
         }
     }).then((res) => {
         console.log(res)
@@ -148,12 +142,9 @@ function edit(index: number) {
 }
 
 function search_query(index: number, callback?: (data: Record<string, unknown>) => void) {
-    axios.post('http://localhost:3030/func', {
-        target: 'search_query',
-        data: {
-            key: dialog.key,
-            offset: (index - 1) * 30
-        }
+    axios.post('/api/search/song', {
+        key: dialog.key,
+        offset: (index - 1) * 30
     }).then((response) => {
         if (typeof callback === 'function') callback(response.data)
     })

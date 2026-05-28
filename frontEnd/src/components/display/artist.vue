@@ -68,10 +68,7 @@ function listen_all() {
 function init() {
     loading.value = true
     detail.value = {}
-    axios.post('func', {
-        target: 'artist_info',
-        data: { id: id.value }
-    }).then((res) => {
+    axios.post('/api/artist/info', { id: id.value }).then((res) => {
         detail.value = res.data.info
         list.value = res.data.songs
         handle_page_change(1)
@@ -80,12 +77,9 @@ function init() {
 }
 
 function handle_page_change(index: number) {
-    axios.post('func', {
-        target: 'get_artist_album',
-        data: {
-            id: id.value,
-            offset: (index - 1) * 30
-        }
+    axios.post('/api/artist/album', {
+        id: id.value,
+        offset: (index - 1) * 30
     }).then((res) => {
         albums.value = res.data.albums
         count.value = res.data.count

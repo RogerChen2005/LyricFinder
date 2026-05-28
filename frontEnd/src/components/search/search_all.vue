@@ -64,10 +64,7 @@ const key = ref('')
 const moreText = ref<any>({})
 
 function search_query() {
-    axios.post('func', {
-        target: 'search_all',
-        data: { key: key.value }
-    }).then((response) => {
+    axios.post('/api/search', { key: key.value }).then((response) => {
         songs.value = response.data.songs
         albums.value = response.data.albums
         lists.value = response.data.lists

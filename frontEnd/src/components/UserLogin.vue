@@ -63,10 +63,7 @@ function Login_cookie() {
 }
 
 function confirm_cookie_login() {
-    axios.post('func', {
-        target: 'user_inf',
-        data: { cookie: input_cookie.value }
-    }).then((res) => {
+    axios.post('/api/auth/user', { cookie: input_cookie.value }).then((res) => {
         if (res.status === 200) {
             ElNotification({ title: 'Success', message: '登陆成功', type: 'success' })
             localStorage.setItem('cookie', input_cookie.value)
@@ -81,17 +78,11 @@ function confirm_cookie_login() {
 function Login_qr() {
     cookie_login.value = false
     qr_login.value = true
-    axios.post('func', {
-        target: 'generate_qr_code',
-        data: {}
-    }).then((response) => {
+    axios.post('/api/auth/qr', {}).then((response) => {
         qrimg.value = response.data.qrimg
         key.value = response.data.key
         timer = setInterval(() => {
-            axios.post('func', {
-                target: 'qr_check',
-                data: { key: key.value }
-            }).then((res) => {
+            axios.post('/api/auth/qr/check', { key: key.value }).then((res) => {
                 const statusRes = res.data
                 if (statusRes.code === 800) {
                     out_of_date.value = true

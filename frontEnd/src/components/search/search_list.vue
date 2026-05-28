@@ -35,12 +35,9 @@ const loading = ref(false)
 
 function search_query(index: number) {
     loading.value = true
-    axios.post('func', {
-        target: 'search_list',
-        data: {
-            key: key.value,
-            offset: (index - 1) * 30
-        }
+    axios.post('/api/search/list', {
+        key: key.value,
+        offset: (index - 1) * 30
     }).then((response) => {
         lists.value = response.data.lists
         count.value = response.data.count

@@ -205,10 +205,7 @@ let lyricSelector: ReturnType<typeof setInterval> | undefined
 
 function open_fullscreen() {
     if (!data.lyric) {
-        axios.post('/func', {
-            target: 'get_lyric',
-            data: { id: data.id }
-        }).then((res) => {
+        axios.post('/api/song/lyric', { id: data.id }).then((res) => {
             data.lyric = []
             if (typeof res.data.lyric === 'string') {
                 const arr = res.data.lyric.split('\n')
@@ -342,12 +339,9 @@ function changeSong(index: number) {
     let quality = 'exhigh'
     const settings = store.settings
     if (settings && settings.quality) quality = settings.quality
-    axios.post('func', {
-        target: 'get_song_url',
-        data: {
-            id: playlist.value[index].id,
-            level: quality
-        }
+    axios.post('/api/song/url', {
+        id: playlist.value[index].id,
+        level: quality
     }).then((result) => {
         Object.assign(data, playlist.value[index])
         data.music_url = result.data.url

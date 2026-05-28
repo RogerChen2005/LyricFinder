@@ -12,9 +12,7 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/func': 'http://127.0.0.1:3030/',
-      '/download': 'http://127.0.0.1:3030/',
-      '/file': 'http://127.0.0.1:3030/'
+      '/api': 'http://127.0.0.1:3030/'
     }
   },
   build: {
