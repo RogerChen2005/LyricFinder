@@ -1,52 +1,33 @@
 <template>
-  <el-container id="container">
-    <el-aside id="aside" width="130px">
-      <el-menu id="menu" :default-active="current_tab" @select="onHandleSelect">
-        <el-icon></el-icon><template #title>首页</template>
-        <div id="logo">
-          <img :src="icon" style="width: 45%;" />
+  <div id="shell">
+    <aside id="sidebar">
+      <div id="logo">
+        <img :src="icon" />
+        <span>LyricFinder</span>
+      </div>
+      <nav id="nav">
+        <a v-for="(item, i) in navItems" :key="item.path"
+          :class="{ active: current_tab === i }"
+          @click="onHandleSelect(i)">
+          <box-icon :name="item.icon" :type="item.type || 'regular'" :color="current_tab === i ? 'var(--accent)' : 'var(--text-color-secondary)'" />
+          <span>{{ item.label }}</span>
+          <el-badge v-if="item.badge" :value="store.queue?.length" :hidden="store.queue?.length === 0" />
+        </a>
+      </nav>
+    </aside>
+    <div id="content-area">
+      <header id="search-header">
+        <div id="search-box">
+          <box-icon name="search" color="var(--text-color-tertiary)" size="18px" />
+          <input v-model="search_text" @keydown.enter="search" placeholder="搜索歌曲、歌手、专辑、歌单，或粘贴网易云链接..." />
         </div>
-        <el-menu-item index="1">
-          <el-icon><box-icon name="home"></box-icon></el-icon>
-          <template #title>首页</template>
-        </el-menu-item>
-        <el-menu-item index="2">
-          <el-icon><box-icon name="list-ul"></box-icon></el-icon>
-          <template #title>歌单</template>
-        </el-menu-item>
-        <el-menu-item index="3">
-          <el-icon>
-            <el-badge :value="store.queue?.length" :hidden="store.queue?.length === 0" class="item"><box-icon
-                name="download"></box-icon></el-badge>
-          </el-icon>
-          <template #title>下载</template>
-        </el-menu-item>
-        <el-menu-item index="4">
-          <el-icon><box-icon name="wrench"></box-icon></el-icon>
-          <template #title>工具</template>
-        </el-menu-item>
-        <el-menu-item index="5">
-          <el-icon><box-icon name="user"></box-icon></el-icon>
-          <template #title>账户</template>
-        </el-menu-item>
-        <el-menu-item index="6">
-          <el-icon><box-icon name="info-circle"></box-icon></el-icon>
-          <template #title>关于</template>
-        </el-menu-item>
-      </el-menu>
-    </el-aside>
-    <el-container>
-      <el-header id="search">
-        <el-input @change="search" v-model="search_text" placeholder="请输入.."> </el-input>
-        <el-button v-on:click="search()" type="primary" style="margin-left: 20px;"><el-icon><box-icon
-              name="search"></box-icon></el-icon>搜索</el-button>
-      </el-header>
-      <el-main id="main">
+      </header>
+      <main id="main">
         <router-view></router-view>
-      </el-main>
-    </el-container>
-  </el-container>
-  <MusicPlayer ref="player" id="player" />
+      </main>
+    </div>
+  </div>
+  <MusicPlayer ref="player" />
 </template>
 
 <script setup lang="ts">
@@ -56,12 +37,19 @@ import { useAppStore } from '@/stores'
 import MusicPlayer from './MusicPlayer.vue'
 import icon from '@/assets/icon.png'
 
-const tabs = ['/', '/list', '/download', '/tools', '/user', '/about']
+const navItems = [
+  { path: '/', icon: 'home', label: '发现', type: '' },
+  { path: '/list', icon: 'list-ul', label: '歌单', type: '' },
+  { path: '/download', icon: 'download', label: '下载', type: '', badge: true },
+  { path: '/tools', icon: 'wrench', label: '工具', type: '' },
+  { path: '/user', icon: 'user', label: '账户', type: '' },
+  { path: '/about', icon: 'info-circle', label: '关于', type: '' },
+]
 
 const store = useAppStore()
 const router = useRouter()
 
-const current_tab = ref(2)
+const current_tab = ref(0)
 const search_text = ref('')
 
 function query_finder(key: string, query: string): string | undefined {
@@ -100,11 +88,12 @@ function search() {
 
 function onHandleSelect(index: number) {
   current_tab.value = index
-  router.push(tabs[index - 1])
+  router.push(navItems[index].path)
 }
 </script>
 
 <style>
+/* Global shared styles */
 .footer {
   display: flex;
   align-items: center;
@@ -115,33 +104,30 @@ function onHandleSelect(index: number) {
 .songlist_card {
   cursor: pointer;
   width: 170px;
-  height: 220px;
-  font-size: 14px;
-  white-space: nowrap;
+  border: 1px solid var(--bd-color);
+  border-radius: var(--radius-md);
   overflow: hidden;
-  text-overflow: ellipsis;
-  margin: 10px;
-  transition: 1s;
-  border-radius: 10px;
-  transition: .5s;
+  transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
+  background: var(--bg-color-solid);
 }
 
 .songlist_card:hover {
-  transform: translateY(-10px);
-  background-color: var(--bg-color);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--accent-subtle);
 }
 
 .page {
   height: 100%;
   width: 100%;
-  animation: enter ease-out .5s;
+  animation: enter 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .button {
   padding-top: 3px;
   height: 30px;
   width: 50px;
-  transition: .5s;
+  transition: var(--transition-fast);
 }
 
 #app {
@@ -153,59 +139,146 @@ function onHandleSelect(index: number) {
 </style>
 
 <style scoped>
-#container {
+#shell {
+  display: flex;
   width: 100%;
   height: 100%;
+  background: var(--bg-color);
 }
 
-#search {
-  display: flex;
-  align-items: center;
-  border-bottom: solid 1px var(--el-border-color);
-}
-
-#main {
-  overflow: hidden;
-  padding: 0;
-}
-
-#menu {
-  text-align: center;
+/* Sidebar */
+#sidebar {
+  width: var(--sidebar-width);
+  min-width: var(--sidebar-width);
   height: 100%;
-  background-color: var(--bg-color);
-  color: var(--text-color);
+  display: flex;
+  flex-direction: column;
+  padding: 20px 12px;
+  background: var(--bg-color-solid);
+  border-right: 1px solid var(--bd-color);
+  box-sizing: border-box;
 }
 
 #logo {
-  font-size: 18px;
-  padding-left: 0;
-  margin-bottom: 20px;
-  cursor: default;
-}
-
-#logo:hover {
-  background: none;
-}
-
-#icon {
-  margin-left: 5px;
-  width: 18px;
-  height: 18px;
-  -webkit-app-region: no-drag;
-}
-
-#button-set {
   display: flex;
-  flex-direction: row;
   align-items: center;
-  -webkit-app-region: no-drag;
+  gap: 12px;
+  padding: 8px 12px;
+  margin-bottom: 28px;
 }
 
-.button:hover {
-  background-color: #e3e3e3;
+#logo img {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
 }
 
-#close:hover {
-  background-color: #F56C6C;
+#logo span {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-color);
+  letter-spacing: -0.3px;
+}
+
+/* Navigation */
+#nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+#nav a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-color-secondary);
+  transition: all var(--transition-fast);
+  text-decoration: none;
+  position: relative;
+}
+
+#nav a:hover {
+  background: var(--bg-color-solid-hover);
+  color: var(--text-color);
+}
+
+#nav a.active {
+  background: var(--accent-subtle);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+#nav a .el-badge {
+  margin-left: auto;
+}
+
+/* Content area */
+#content-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+}
+
+/* Header */
+#search-header {
+  height: var(--header-height);
+  min-height: var(--header-height);
+  display: flex;
+  align-items: center;
+  padding: 0 28px;
+  background: var(--bg-color-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--bd-color);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+#search-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 560px;
+  padding: 8px 16px;
+  background: var(--bg-color);
+  border: 1px solid var(--bd-color);
+  border-radius: var(--radius-full);
+  transition: all var(--transition-fast);
+}
+
+#search-box:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-subtle);
+}
+
+#search-box input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+  color: var(--text-color);
+  font-family: inherit;
+}
+
+#search-box input::placeholder {
+  color: var(--text-color-tertiary);
+}
+
+/* Main */
+#main {
+  flex: 1;
+  overflow: hidden;
+  padding: 0;
 }
 </style>

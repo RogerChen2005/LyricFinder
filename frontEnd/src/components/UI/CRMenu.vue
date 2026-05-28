@@ -41,23 +41,23 @@ defineExpose({ handleOpen })
 <style>
 @keyframes cui-rmenu-appear {
     0% {
-        opacity: 0%;
-        transform: translate(-25%,-25%) scale(0.5);
+        opacity: 0;
+        transform: translate(-25%,-25%) scale(0.9);
     }
     100% {
-        opacity: 100%;
+        opacity: 1;
         transform: scale(1);
     }
 }
 
 @keyframes cui-rmenu-disappear {
     0% {
-        opacity: 100%;
+        opacity: 1;
         transform: scale(1);
     }
     100% {
-        opacity: 0%;
-        transform: translate(-25%,-25%) scale(0.5);
+        opacity: 0;
+        transform: translate(-25%,-25%) scale(0.9);
     }
 }
 </style>
@@ -77,21 +77,15 @@ defineExpose({ handleOpen })
     width: auto;
     height: auto;
     max-width: 80%;
-    border: solid var(--bd-color) 1px;
-    background-color: var(--bg-color-solid);
-    border-radius: 8px;
-    animation: cui-rmenu-appear .25s cubic-bezier(0, 0, 0.36, 1.29);
+    border: 1px solid var(--bd-color);
+    background-color: var(--bg-color-elevated);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    animation: cui-rmenu-appear .2s cubic-bezier(0.16, 1, 0.3, 1);
+    padding: 4px;
 }
 
 #content {
     height: 100%;
-}
-
-#close {
-    position: absolute;
-    right: 0;
-    top: 0;
-    margin: 5px;
-    cursor: pointer;
 }
 </style>

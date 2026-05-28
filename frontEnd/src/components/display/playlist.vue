@@ -1,21 +1,23 @@
 <template>
     <el-container class="container">
-        <el-main v-loading="loading">
-            <div class="colbox" id="container">
-                <img id="cover" :src="songlist.cover_img" />
-                <div class="rowbox" style="justify-content: space-between;">
-                    <div id="name">{{ songlist.name }}</div>
-                    <div id="description">{{ songlist.description }}</div>
-                    <div id="count">共 {{ songlist.count }} 首 {{ (new Date(songlist.create_time)).toDateString() }}</div>
-                    <el-button @click="listen_all" type="primary" style="width: 200px;"><box-icon color="white"
-                            name='add-to-queue'></box-icon>播放整页</el-button>
+        <el-main v-loading="loading" style="padding: 28px 36px; overflow: auto;">
+            <div class="detail-header">
+                <img class="detail-cover" :src="songlist.cover_img" />
+                <div class="detail-meta">
+                    <div class="detail-type">歌单</div>
+                    <div class="detail-name">{{ songlist.name }}</div>
+                    <div class="detail-desc">{{ songlist.description }}</div>
+                    <div class="detail-count">共 {{ songlist.count }} 首</div>
+                    <el-button @click="listen_all" type="primary" style="margin-top: 16px;">
+                        <box-icon name='add-to-queue' color="#fff" style="margin-right: 6px;"></box-icon>播放全部
+                    </el-button>
                 </div>
             </div>
             <SongTable :list="list"></SongTable>
         </el-main>
-        <el-footer class="footer">
+        <el-footer class="footer" height="50px">
             <el-pagination @current-change="handle_drawer_page_change" :default-page-size="30" background
-                layout="prev, pager, next,jumper" :total="songlist.count" />
+                layout="prev, pager, next, jumper" :total="songlist.count" />
         </el-footer>
     </el-container>
 </template>
@@ -68,25 +70,55 @@ if (id.value) init()
 </script>
 
 <style scoped>
-#container {
-    margin: 20px;
-    margin-left: 0;
+.detail-header {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 28px;
 }
 
-#cover {
-    width: 180px;
-    height: 180px;
-    margin-right: 20px;
-    border-radius: 10px;
+.detail-cover {
+    width: 200px;
+    height: 200px;
+    border-radius: var(--radius-lg);
+    object-fit: cover;
+    box-shadow: var(--shadow-lg);
+    flex-shrink: 0;
 }
 
-#description {
-    font-size: 18px;
-    font-weight: 500;
+.detail-meta {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
-#name {
-    font-size: 40px;
-    font-weight: 800;
+.detail-type {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--accent);
+    margin-bottom: 8px;
+}
+
+.detail-name {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-color);
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+}
+
+.detail-desc {
+    font-size: 13px;
+    color: var(--text-color-secondary);
+    margin-top: 8px;
+    line-height: 1.5;
+    max-width: 400px;
+}
+
+.detail-count {
+    font-size: 13px;
+    color: var(--text-color-tertiary);
+    margin-top: 8px;
 }
 </style>

@@ -1,28 +1,35 @@
 <template>
     <div id="main_content" class="container">
-        <div v-if="!isLogin" style="text-align: center;">
+        <div v-if="!isLogin" class="empty-state">
             <el-empty description="未登录" />
-            <el-button type="primary" @click="router.push('/login')">登陆</el-button>
+            <el-button type="primary" @click="router.push('/login')">登录</el-button>
         </div>
         <div v-if="isLogin" id="user-page">
             <div id="op">
-                <el-button @click="user_inf" type="primary"><box-icon color="white"
-                        name='refresh'></box-icon>刷新登录</el-button>
-
+                <el-button @click="user_inf" type="primary" plain>
+                    <box-icon name='refresh' color="var(--accent)"></box-icon>
+                    <span style="margin-left: 6px;">刷新</span>
+                </el-button>
                 <el-popconfirm @confirm="exit" title="确认退出登录？">
                     <template #reference>
-                        <el-button type="danger"><box-icon color="white" name='exit'></box-icon>退出登录</el-button>
+                        <el-button type="danger" plain>
+                            <box-icon name='exit' color="var(--danger)"></box-icon>
+                            <span style="margin-left: 6px;">退出</span>
+                        </el-button>
                     </template>
                 </el-popconfirm>
             </div>
-            <img id="bg" :src="bgurl">
-            <div id="mask"></div>
-            <el-avatar id="av" :size="150">
-                <img :src="avurl" />
-            </el-avatar>
-            <el-text id="name">{{ name }} <img v-if="isvip" style="width: 50px;vertical-align: middle;"
-                    :src="vipImg"></el-text>
-            <el-text id="sg">{{ sig }}</el-text>
+            <div id="bg-wrapper">
+                <img id="bg" :src="bgurl">
+                <div id="mask"></div>
+            </div>
+            <div id="profile-info">
+                <el-avatar id="av" :size="120">
+                    <img :src="avurl" />
+                </el-avatar>
+                <div id="name">{{ name }} <img v-if="isvip" style="width: 40px; vertical-align: middle;" :src="vipImg"></div>
+                <div id="sg">{{ sig }}</div>
+            </div>
         </div>
     </div>
 </template>
@@ -87,8 +94,15 @@ store.data!.gets('profile', (data) => {
     height: 100%;
 }
 
-#user-page {
+.empty-state {
+    display: flex;
+    flex-direction: column;
     align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+#user-page {
     width: 100%;
     height: 100%;
     display: flex;
@@ -96,43 +110,64 @@ store.data!.gets('profile', (data) => {
     position: relative;
 }
 
+#bg-wrapper {
+    position: relative;
+    width: 100%;
+    height: 280px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
 #bg {
     position: absolute;
     width: 100%;
-    z-index: -2;
+    top: 50%;
+    transform: translateY(-50%);
+    object-fit: cover;
 }
 
 #mask {
     position: absolute;
     width: 100%;
     height: 100%;
-    z-index: -1;
-    background: linear-gradient(#FFFFFF00, #FFFFFFAA 25%, #FFFFFFFF 60%);
+    background: linear-gradient(180deg, transparent 0%, var(--bg-color) 100%);
 }
 
-html.dark #mask {
-    background: linear-gradient(#00000000, #2b2b2baa 25%, #2b2b2b 60%);
+#profile-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: -60px;
+    position: relative;
+    z-index: 3;
+    padding-bottom: 40px;
 }
 
 #av {
-    z-index: 3;
-    margin-top: 15%;
+    border: 4px solid var(--bg-color-solid);
+    box-shadow: var(--shadow-lg);
 }
 
 #name {
-    font-size: 50px;
-    margin-top: 10px;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-color);
+    margin-top: 16px;
+    letter-spacing: -0.3px;
 }
 
 #sg {
     margin-top: 8px;
-    font-size: 18px;
+    font-size: 14px;
+    color: var(--text-color-secondary);
 }
 
 #op {
     position: absolute;
-    top: 0;
-    right: 0;
-    margin: 20px;
+    top: 16px;
+    right: 16px;
+    z-index: 10;
+    display: flex;
+    gap: 8px;
 }
 </style>

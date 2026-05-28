@@ -1,48 +1,58 @@
 <template>
     <div id="main_container">
-        <div class="title">
-            <div>单曲</div><el-link :href="`./#/search/song?key=${key}&page=1`">{{ moreText.song }}</el-link>
+        <div class="section">
+            <div class="section-header">
+                <div class="section-title">单曲</div>
+                <el-link :href="`./#/search/song?key=${key}&page=1`" :underline="false" class="more-link">{{ moreText.song }} ></el-link>
+            </div>
+            <SongTable :list="songs"></SongTable>
         </div>
-        <SongTable :list="songs"></SongTable>
-        <div class="title">
-            <div>专辑</div><el-link :href="`./#/search/album?key=${key}&page=1`">{{ moreText.album }}</el-link>
+        <div class="section">
+            <div class="section-header">
+                <div class="section-title">专辑</div>
+                <el-link :href="`./#/search/album?key=${key}&page=1`" :underline="false" class="more-link">{{ moreText.album }} ></el-link>
+            </div>
+            <div class="card-grid">
+                <el-card v-on:click="display_album(item)" v-for="item in albums" :key="item.id" class="songlist_card"
+                    :body-style="{ padding: '0' }" shadow="never">
+                    <img class="card-cover" :src="item.cover_img">
+                    <div class="card-info">
+                        <p class="card-name">{{ item.name }}</p>
+                        <p class="card-meta">{{ item.artist }} · {{ item.count }}首</p>
+                    </div>
+                </el-card>
+            </div>
         </div>
-        <div class="colbox col-container">
-            <el-card v-on:click="display_album(item)" v-for="item in albums" :key="item.id" class="songlist_card"
-                :body-style="{ padding: '10px', textAlign: 'left' }">
-                <img style="height: 150px;width: 150px;border-radius: 5px;" :src="item.cover_img">
-                <div style="padding: 5px;overflow: hidden;">
-                    <p style="margin:0;padding:0;font-size: 14px;">{{ item.name }}</p>
-                    <p style="margin:0;padding:0;font-size: 8px;">{{ item.artist }}</p>
-                    <p style="margin:0;padding:0;font-size: 8px;">{{ item.count }}首</p>
-                </div>
-            </el-card>
+        <div class="section">
+            <div class="section-header">
+                <div class="section-title">歌手</div>
+                <el-link :href="`./#/search/artist?key=${key}&page=1`" :underline="false" class="more-link">{{ moreText.artist }} ></el-link>
+            </div>
+            <div class="card-grid">
+                <el-card v-on:click="display_artist(item)" v-for="item in artists" :key="item.id" class="songlist_card"
+                    :body-style="{ padding: '0' }" shadow="never">
+                    <img class="card-cover artist-img" :src="item.cover_img">
+                    <div class="card-info">
+                        <p class="card-name">{{ item.name }}</p>
+                    </div>
+                </el-card>
+            </div>
         </div>
-        <div class="title">
-            <div>歌手</div><el-link :href="`./#/search/artist?key=${key}&page=1`">{{ moreText.artist }}</el-link>
-        </div>
-        <div class="colbox col-container">
-            <el-card v-on:click="display_artist(item)" v-for="item in artists" :key="item.id" class="songlist_card"
-                :body-style="{ padding: '10px', textAlign: 'left' }">
-                <img style="height: 150px;width: 150px;border-radius: 5px;" :src="item.cover_img">
-                <div style="padding: 5px;overflow: hidden;">
-                    <p style="margin:0;padding:0;font-size: 14px;">{{ item.name }}</p>
-                </div>
-            </el-card>
-        </div>
-        <div class="title">
-            <div>歌单</div><el-link :href="`./#/search/list?key=${key}&page=1`">{{ moreText.list }}</el-link>
-        </div>
-        <div class="colbox col-container">
-            <el-card v-on:click="display_list(item)" v-for="item in lists" :key="item.id" class="songlist_card"
-                :body-style="{ padding: '10px', textAlign: 'left' }">
-                <img style="height: 150px;width: 150px;border-radius: 5px;" :src="item.cover_img">
-                <div style="padding: 5px;overflow: hidden;">
-                    <p style="margin:0;padding:0;font-size: 14px;">{{ item.name }}</p>
-                    <p style="margin:0;padding:0;font-size: 8px;">{{ item.creator }}</p>
-                    <p style="margin:0;padding:0;font-size: 8px;">{{ item.count }}首</p>
-                </div>
-            </el-card>
+        <div class="section">
+            <div class="section-header">
+                <div class="section-title">歌单</div>
+                <el-link :href="`./#/search/list?key=${key}&page=1`" :underline="false" class="more-link">{{ moreText.list }} ></el-link>
+            </div>
+            <div class="card-grid">
+                <el-card v-on:click="display_list(item)" v-for="item in lists" :key="item.id" class="songlist_card"
+                    :body-style="{ padding: '0' }" shadow="never">
+                    <img class="card-cover" :src="item.cover_img">
+                    <div class="card-info">
+                        <p class="card-name">{{ item.name }}</p>
+                        <p class="card-meta">{{ item.creator }} · {{ item.count }}首</p>
+                    </div>
+                </el-card>
+            </div>
         </div>
     </div>
 </template>
@@ -95,51 +105,76 @@ watch(() => route.query, () => {
 </script>
 
 <style scoped>
-@keyframes enter {
-    0% {
-        transform: translateY(300px);
-        opacity: 0;
-    }
-    100% {
-        transform: translateY(0%);
-        opacity: 1;
-    }
-}
-
-.title{
-    display: flex;
-    flex-direction: row;
-    margin: 10px;
-    align-items: baseline;
-}
-
-.title div{
-    font-size: 20px;
-    font-weight: 800;
-    margin-right: 20px;
-}
-.col-container{
-    flex-wrap: wrap;
-    overflow-x: auto;
-}
-
 #main_container {
     height: 100%;
-    width:calc(100% - 20px);
-    overflow:auto;
-    margin-left: 20px;
+    overflow: auto;
+    padding: 24px 36px;
+    box-sizing: border-box;
 }
 
-.r-card {
-    border-radius: 10px;
-    padding: 0;
-    margin-bottom: 10px;
+.section {
+    margin-bottom: 32px;
 }
 
-.footer {
+.section-header {
     display: flex;
-    align-items: center;
-    flex-direction: row;
-    justify-content: center;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.section-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.more-link {
+    font-size: 13px;
+    color: var(--text-color-secondary) !important;
+}
+
+.more-link:hover {
+    color: var(--accent) !important;
+}
+
+.card-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.card-cover {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    display: block;
+}
+
+.artist-img {
+    border-radius: 50%;
+    padding: 16px;
+    background: var(--bg-color);
+}
+
+.card-info {
+    padding: 12px;
+}
+
+.card-name {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.card-meta {
+    margin: 4px 0 0;
+    font-size: 11px;
+    color: var(--text-color-tertiary);
 }
 </style>

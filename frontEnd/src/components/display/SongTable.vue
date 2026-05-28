@@ -1,33 +1,42 @@
 <template>
-    <el-table @row-contextmenu="handleRightClick" :data="list" style="width: 100%;">
-        <el-table-column type="index" />
-        <el-table-column prop="title" label="名称" />
-        <el-table-column prop="artists" label="歌手">
+    <div class="song-table-wrapper">
+        <el-table @row-contextmenu="handleRightClick" :data="list" style="width: 100%;"
+            :header-cell-style="{ background: 'var(--bg-color)', color: 'var(--text-color-secondary)', fontWeight: '500', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }"
+            :row-style="{ cursor: 'pointer' }"
+            @row-dblclick="(row: SongItem) => listen(row)">
+        <el-table-column type="index" width="50" />
+        <el-table-column prop="title" label="名称" min-width="200">
+            <template #default="scope">
+                <span class="song-title">{{ scope.row.title }}</span>
+            </template>
+        </el-table-column>
+        <el-table-column prop="artists" label="歌手" min-width="120">
             <template #default="scope">
                 <div v-for="artist in scope.row.artists" :key="artist.id">
-                    <el-link @click="display_artist(artist)">{{ artist.name }}</el-link>
+                    <el-link @click="display_artist(artist)" :underline="false" class="artist-link">{{ artist.name }}</el-link>
                 </div>
             </template>
         </el-table-column>
-        <el-table-column prop="album" label="专辑">
+        <el-table-column prop="album" label="专辑" min-width="120">
             <template #default="scope">
-                <el-link @click="display_album(scope.row.album)">{{ scope.row.album.name }}</el-link>
+                <el-link @click="display_album(scope.row.album)" :underline="false" class="album-link">{{ scope.row.album.name }}</el-link>
             </template>
         </el-table-column>
-        <el-table-column fixed="right">
+        <el-table-column fixed="right" width="60">
             <template #default="scope">
-                <div class="play-circle" @click="listen(list[scope.$index])">
-                    <box-icon name="play-circle" size="20px" color="var(--text-color)"></box-icon>
+                <div class="play-circle" @click.stop="listen(list[scope.$index])">
+                    <box-icon name="play" size="16px" color="var(--accent)"></box-icon>
                 </div>
             </template>
         </el-table-column>
     </el-table>
+    </div>
     <Teleport to="body">
         <CRMenu ref="menu" v-model:visible="display">
             <template #content>
                 <CRMenuCell v-for="option in options" :key="option.name"
                     @click="option.handler(data); display = false;">
-                    <template #icon><box-icon size="25px" color="var(--text-color)"
+                    <template #icon><box-icon size="20px" color="var(--text-color)"
                             :name="option.icon"></box-icon></template>
                     {{ option.name }}
                 </CRMenuCell>
@@ -108,18 +117,52 @@ function handleRightClick(row: SongItem, _col: unknown, e: MouseEvent) {
 </script>
 
 <style scoped>
+.song-table-wrapper {
+    border: 1px solid var(--bd-color);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.song-title {
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.artist-link {
+    font-size: 13px;
+    color: var(--text-color-secondary) !important;
+}
+
+.artist-link:hover {
+    color: var(--accent) !important;
+}
+
+.album-link {
+    font-size: 13px;
+    color: var(--text-color-secondary) !important;
+}
+
+.album-link:hover {
+    color: var(--accent) !important;
+}
+
 .play-circle {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 30px;
-    height: 30px;
-    border-radius: 100%;
-    transition: .5s;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    transition: all var(--transition-fast);
     cursor: pointer;
+    opacity: 0;
 }
 
 .play-circle:hover {
-    background-color: var(--bg-color-solid-hover);
+    background: var(--accent-subtle);
+}
+
+:deep(.el-table__row:hover) .play-circle {
+    opacity: 1;
 }
 </style>

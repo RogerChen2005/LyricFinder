@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios from '@/utils/request'
 
 type Callback = (data: Record<string, unknown>) => void
 type ErrCallback = (reason: unknown) => void
@@ -13,8 +13,7 @@ const proc: ProcMap = {
       cookie: localStorage.getItem('cookie')
     }).then((response) => {
       callback({
-        songs: response.data.songs,
-        lists: response.data.lists
+        sections: response.data.sections
       })
     }).catch((reason) => {
       if (typeof err === 'function') err(reason)

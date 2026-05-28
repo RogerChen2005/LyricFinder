@@ -6,26 +6,27 @@
 </template>
 
 <style>
-#cui-rmenu-cell-wrapper{
+#cui-rmenu-cell-wrapper {
     display: flex;
     align-items: center;
     flex-direction: row;
     width: auto;
-    height: 30px;
-    margin: 5px;
-    border-radius: 3px;
-    transition: .5s;
-    background-color:var(--bg-color-solid);
-    font-size: 14px;
-    padding: 2px 7px 2px 2px;
+    height: 36px;
+    margin: 2px;
+    border-radius: var(--radius-sm);
+    transition: background var(--transition-fast);
+    background-color: transparent;
+    font-size: 13px;
+    padding: 2px 12px 2px 4px;
     cursor: pointer;
+    color: var(--text-color);
 }
-#cui-rmenu-cell-wrapper:hover{
-    background-color:var(--bg-color-solid-hover);
+#cui-rmenu-cell-wrapper:hover {
+    background-color: var(--bg-color-solid-hover);
 }
-#cui-rmenu-cell-icon{
-    width: 30px;
-    height: 30px;
+#cui-rmenu-cell-icon {
+    width: 32px;
+    height: 32px;
     display: flex;
     justify-content: center;
     align-items: center;

@@ -1,70 +1,74 @@
 <template>
   <div id="main" class="container">
-    <h1 class="title">工具</h1>
-    <el-card v-for="item in tools" :key="item.target" shadow="hover" style="margin-bottom: 10px;width: calc(100% - 30px);"
-      body-style="padding:10px">
-      <div class="r-card">
-        <div style="display: flex;flex-direction: column;align-items: self-start;">
-          <div class="hide_text" style="font-size: 20px;">{{ item.name }}</div>
-          <div class="hide_text" style="font-size: 14px;">{{ item.discription }}</div>
-        </div>
-        <el-button v-on:click="opentool(item.target)" type="primary">开始</el-button>
-      </div>
-    </el-card>
+    <div class="page-header">
+      <h1 class="title">工具</h1>
+      <p class="subtitle">批量处理工具与应用设置</p>
+    </div>
 
-    <h1 class="title">设置</h1>
-    <div style="padding-left: 2em;padding-right: 2em;">
-      <div class="item">
-        <div class="header">
-          <div style="font-size: 20px;">分文件夹存放</div>
-          <div style="font-size: 14px;">开启后可将歌词，封面，歌曲存放至不同的子文件夹</div>
+    <div class="tool-grid">
+      <div v-for="item in tools" :key="item.target" class="tool-card" @click="opentool(item.target)">
+        <div class="tool-info">
+          <div class="tool-name">{{ item.name }}</div>
+          <div class="tool-desc">{{ item.discription }}</div>
         </div>
-        <el-switch disabled @change="update" v-model="settings.classify" active-color="#13ce66"></el-switch>
+        <div class="tool-arrow">
+          <box-icon name="right-arrow-alt" color="var(--text-color-tertiary)"></box-icon>
+        </div>
       </div>
-      <div class="item">
-        <div class="header">
-          <div style="font-size: 20px;">命名方式</div>
-          <div style="font-size: 14px;">调整命名顺序</div>
+    </div>
+
+    <div class="section-header">
+      <h2 class="title">设置</h2>
+    </div>
+
+    <div class="settings-list">
+      <div class="setting-item">
+        <div class="setting-info">
+          <div class="setting-name">分文件夹存放</div>
+          <div class="setting-desc">开启后可将歌词、封面、歌曲存放至不同的子文件夹</div>
         </div>
-        <el-select @change="update" v-model="settings.mode" placeholder="选择">
+        <el-switch disabled @change="update" v-model="settings.classify" />
+      </div>
+      <div class="setting-item">
+        <div class="setting-info">
+          <div class="setting-name">命名方式</div>
+          <div class="setting-desc">调整文件命名顺序</div>
+        </div>
+        <el-select @change="update" v-model="settings.mode" placeholder="选择" style="width: 180px;">
           <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
         </el-select>
       </div>
-      <div class="item">
-        <div class="header">
-          <div style="font-size: 20px;">播放质量</div>
-          <div style="font-size: 14px;">选择播放时的音频质量</div>
+      <div class="setting-item">
+        <div class="setting-info">
+          <div class="setting-name">播放质量</div>
+          <div class="setting-desc">选择播放时的音频质量</div>
         </div>
-        <el-select v-model="settings.quality" placeholder="请选择音质" @change="update">
-          <el-option v-for="item in quality" :key="item.value" :label="item.label" :value="item.value">
-            <span style="float: left">{{ item.label }}</span>
-          </el-option>
+        <el-select v-model="settings.quality" placeholder="请选择音质" @change="update" style="width: 180px;">
+          <el-option v-for="item in quality" :key="item.value" :label="item.label" :value="item.value" />
         </el-select>
       </div>
-      <div class="item">
-        <div class="header">
-          <div style="font-size: 20px;">下载质量</div>
-          <div style="font-size: 14px;">选择播放时的音频质量</div>
+      <div class="setting-item">
+        <div class="setting-info">
+          <div class="setting-name">下载质量</div>
+          <div class="setting-desc">选择下载时的音频质量</div>
         </div>
-        <el-select v-model="settings.level" placeholder="请选择音质" @change="update">
-          <el-option v-for="item in quality" :key="item.value" :label="item.label" :value="item.value">
-            <span style="float: left">{{ item.label }}</span>
-          </el-option>
+        <el-select v-model="settings.level" placeholder="请选择音质" @change="update" style="width: 180px;">
+          <el-option v-for="item in quality" :key="item.value" :label="item.label" :value="item.value" />
         </el-select>
       </div>
-      <div class="item">
-        <div class="header">
-          <div style="font-size: 20px;">歌词下载</div>
-          <div style="font-size: 14px;">是否下载歌词</div>
+      <div class="setting-item">
+        <div class="setting-info">
+          <div class="setting-name">歌词下载</div>
+          <div class="setting-desc">是否在下载时同时下载歌词</div>
         </div>
-        <el-switch @change="update" v-model="settings.lyric" active-color="#13ce66"></el-switch>
+        <el-switch @change="update" v-model="settings.lyric" />
       </div>
-      <div v-if="settings.lyric" class="item">
-        <div class="header">
-          <div style="font-size: 20px;">翻译歌词</div>
-          <div style="font-size: 14px;">开启后存储的歌词包括翻译歌词</div>
+      <div v-if="settings.lyric" class="setting-item">
+        <div class="setting-info">
+          <div class="setting-name">翻译歌词</div>
+          <div class="setting-desc">开启后存储的歌词将包含翻译</div>
         </div>
-        <el-switch @change="update" v-model="settings.tlyric" active-color="#13ce66"></el-switch>
+        <el-switch @change="update" v-model="settings.tlyric" />
       </div>
     </div>
   </div>
@@ -86,8 +90,8 @@ const options = [
 ]
 
 const tools = [
-  { name: '自动为文件夹中歌曲匹配歌词', discription: '有几率匹配不准确', target: 'FolderLyric' },
-  { name: '自动为文件夹中歌曲匹配封面', discription: '如果存在封面会自动跳过', target: 'FolderCover' }
+  { name: '自动匹配歌词', discription: '为文件夹中的歌曲自动匹配歌词，有几率匹配不准确', target: 'FolderLyric' },
+  { name: '自动匹配封面', discription: '为文件夹中的歌曲自动匹配封面，已存在封面会跳过', target: 'FolderCover' }
 ]
 
 const quality = [
@@ -117,52 +121,109 @@ if (saved) {
 </script>
 
 <style scoped>
-.hide_text {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-#main .item {
-  margin-bottom: 30px;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  height: 40px;
-  align-items: center;
-}
-
-#main .item:last-child {
-  margin-bottom: 0;
-}
-
-#main .title {
-  font-size: 25px;
-}
-
 #main {
-  padding: 20px;
+  padding: 32px 36px;
   text-align: left;
   height: 100%;
   overflow: auto;
+  box-sizing: border-box;
 }
 
-.r-card {
-  border-radius: 10px;
-  padding: 0;
-  margin-bottom: 10px;
+.page-header {
+  margin-bottom: 28px;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: var(--text-color-secondary);
+  margin: 4px 0 0;
+}
+
+.section-header {
+  margin: 36px 0 16px;
+}
+
+.tool-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tool-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: var(--bg-color-solid);
+  border: 1px solid var(--bd-color);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.tool-card:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-md);
+  transform: translateX(4px);
+}
+
+.tool-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 4px;
+}
+
+.tool-desc {
+  font-size: 13px;
+  color: var(--text-color-secondary);
+}
+
+.tool-arrow {
+  flex-shrink: 0;
+  margin-left: 16px;
+}
+
+.settings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: var(--bd-color);
+  border: 1px solid var(--bd-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.setting-item {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  width: 100%;
+  padding: 16px 20px;
+  background: var(--bg-color-solid);
+  transition: background var(--transition-fast);
 }
 
-.header {
-  min-width: 25%;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: self-start;
+.setting-item:hover {
+  background: var(--bg-color-solid-hover);
+}
+
+.setting-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-color);
+  margin-bottom: 2px;
+}
+
+.setting-desc {
+  font-size: 12px;
+  color: var(--text-color-secondary);
 }
 </style>

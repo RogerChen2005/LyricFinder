@@ -101,9 +101,14 @@ export interface DiscoverList {
   id: number
 }
 
+export interface DiscoverSection {
+  title: string
+  type: 'playlist' | 'song'
+  items: DiscoverList[] | SongRef[]
+}
+
 export interface DiscoverResult {
-  lists: DiscoverList[]
-  songs: SongRef[]
+  sections: DiscoverSection[]
 }
 
 export interface DownloadOptions {

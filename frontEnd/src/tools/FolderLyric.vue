@@ -57,7 +57,7 @@
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
-import axios from 'axios'
+import axios from '@/utils/request'
 import { ElMessage } from 'element-plus'
 
 interface QueueItem {

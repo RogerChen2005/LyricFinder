@@ -1,5 +1,5 @@
 import { ElMessage, ElNotification } from 'element-plus'
-import axios from 'axios'
+import axios from '@/utils/request'
 
 const default_setting = { mode: 0, lyric: true, tlyric: true, level: 'exhigh' }
 

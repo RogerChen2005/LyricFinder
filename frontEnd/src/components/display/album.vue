@@ -1,13 +1,15 @@
 <template>
     <el-container class="container">
-        <el-main v-loading="loading">
-            <div class="colbox" id="container">
-                <img id="cover" :src="detail.cover_img" />
-                <div class="rowbox" style="justify-content: space-between;">
-                    <div id="name">{{ detail.name }}</div>
-                    <div id="count">共 {{ detail.count }} 首 {{ (new Date(detail.create_time)).toDateString() }}</div>
-                    <el-button @click="listen_all" type="primary" style="width: 200px;"><box-icon color="white"
-                            name='add-to-queue'></box-icon>播放整页</el-button>
+        <el-main v-loading="loading" style="padding: 28px 36px; overflow: auto;">
+            <div class="detail-header">
+                <img class="detail-cover" :src="detail.cover_img" />
+                <div class="detail-meta">
+                    <div class="detail-type">专辑</div>
+                    <div class="detail-name">{{ detail.name }}</div>
+                    <div class="detail-count">共 {{ detail.count }} 首</div>
+                    <el-button @click="listen_all" type="primary" style="margin-top: 16px;">
+                        <box-icon name='add-to-queue' color="#fff" style="margin-right: 6px;"></box-icon>播放全部
+                    </el-button>
                 </div>
             </div>
             <el-tabs v-model="activeName">
@@ -15,7 +17,7 @@
                     <SongTable :list="list"></SongTable>
                 </el-tab-pane>
                 <el-tab-pane label="简介" name="description">
-                    {{ detail.description }}
+                    <div class="description-text">{{ detail.description }}</div>
                 </el-tab-pane>
             </el-tabs>
         </el-main>
@@ -61,20 +63,54 @@ if (id.value) init()
 </script>
 
 <style scoped>
-#container {
-    margin: 20px;
-    margin-left: 0;
+.detail-header {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 28px;
 }
 
-#cover {
-    width: 180px;
-    height: 180px;
-    margin-right: 20px;
-    border-radius: 10px;
+.detail-cover {
+    width: 200px;
+    height: 200px;
+    border-radius: var(--radius-lg);
+    object-fit: cover;
+    box-shadow: var(--shadow-lg);
+    flex-shrink: 0;
 }
 
-#name {
-    font-size: 40px;
-    font-weight: 800;
+.detail-meta {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.detail-type {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--accent);
+    margin-bottom: 8px;
+}
+
+.detail-name {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-color);
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+}
+
+.detail-count {
+    font-size: 13px;
+    color: var(--text-color-tertiary);
+    margin-top: 8px;
+}
+
+.description-text {
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--text-color-secondary);
+    max-width: 600px;
 }
 </style>

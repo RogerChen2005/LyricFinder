@@ -1,36 +1,34 @@
 <template>
-    <div style="position: relative;background-color: var(--bg-color);" class="container">
-        <div class="drawer-container rowbox">
-            <div class="colbox" style="align-items: center;justify-content: center;">
-                <img :src="iconImg" style="height: 80px;" />
-                <div style="font-size: 26px;margin-left: 20px;text-align: left;">
-                    Lyric<br />
-                    <div style="font-size: 39px;">Finder</div>
+    <div class="login-page">
+        <div class="login-card">
+            <div class="login-header">
+                <img :src="iconImg" class="login-logo" />
+                <div class="login-brand">
+                    <span class="brand-sub">Lyric</span>
+                    <span class="brand-main">Finder</span>
                 </div>
             </div>
-            <div style="align-items: center;align-items: center;justify-content: center;" class="drawer-body rowbox">
-                <div v-if="qr_login" style="width: 200px;height: 200px;margin: 0;position: relative;text-align: center;">
-                    <div v-if="scan_success" class="mask">
-                        <box-icon size="lg" name='check-circle' color='#409EFF'></box-icon>
-                        <div>已扫描</div>
+            <div class="login-body">
+                <div v-if="qr_login" class="qr-section">
+                    <div class="qr-wrapper">
+                        <div v-if="scan_success" class="qr-overlay">
+                            <box-icon size="lg" name='check-circle' color='var(--success)'></box-icon>
+                            <div>已扫描</div>
+                        </div>
+                        <div v-if="out_of_date" class="qr-overlay">
+                            <box-icon size="lg" name='x-circle' color='var(--danger)'></box-icon>
+                            <div>已过期</div>
+                        </div>
+                        <img :src="qrimg" class="qr-img" />
                     </div>
-                    <div v-if="out_of_date" class="mask">
-                        <box-icon size="lg" name='x-circle' color='#F56C6C'></box-icon>
-                        <div>已过期</div>
-                    </div>
-                    <img :src="qrimg" />
-                    <div>使用网易云 APP 扫码登录</div>
-                    <el-link type="primary" @click="Login_cookie">使用cookie登录(不推荐)</el-link>
+                    <div class="qr-hint">使用网易云 APP 扫码登录</div>
+                    <el-link type="primary" @click="Login_cookie" class="alt-login">使用 cookie 登录</el-link>
                 </div>
-                <div v-if="cookie_login" style="width: 80%;">
-                    <div style="margin-bottom: 20px;">
-                        <el-input v-model="input_cookie" type="textarea" placeholder="请输入cookie">
-                        </el-input>
-                    </div>
-                    <div style="display: flex;justify-content: space-around;">
-                        <el-button v-on:click="confirm_cookie_login()" type="primary"
-                            style="margin-left: 20px;">登录</el-button>
-                        <el-button v-on:click="Login_qr" type="danger" style="margin-left: 20px;">返回</el-button>
+                <div v-if="cookie_login" class="cookie-section">
+                    <el-input v-model="input_cookie" type="textarea" :rows="4" placeholder="请输入 cookie" />
+                    <div class="cookie-actions">
+                        <el-button v-on:click="confirm_cookie_login()" type="primary">登录</el-button>
+                        <el-button v-on:click="Login_qr" plain>返回扫码</el-button>
                     </div>
                 </div>
             </div>
@@ -108,48 +106,125 @@ setTimeout(() => Login_qr(), 0)
 </script>
 
 <style scoped>
-@keyframes enter-from-bottom {
-    0% {
-        transform: translate(-100%, -50%);
-        background: rgba(158, 158, 158, 0.1);
-    }
-    100% {
-        transform: translate(-50%, -50%);
-    }
-}
-
-.drawer-container {
-    position: absolute;
-    transform: translate(-50%, -50%);
-    top: 50%;
-    left: 50%;
-    width: 700px;
-    height: 500px;
-    transition: all 0.5s ease-in-out;
-    text-align: center;
-    background-color: var(--bg-color);
-}
-
-.drawer-body {
-    padding: 20px;
-    margin: 20px;
+.login-page {
     width: 100%;
-    flex-grow: 1;
-    border-radius: 5px;
-    transition: 0.5s ease-in-out;
-    box-shadow: var(--el-box-shadow);
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-color);
 }
 
-.mask {
+.login-card {
+    width: 400px;
+    background: var(--bg-color-solid);
+    border: 1px solid var(--bd-color);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    animation: slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slide-up {
+    from { translate: 0 30px; opacity: 0; }
+    to { translate: 0 0; opacity: 1; }
+}
+
+.login-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 36px 32px 24px;
+    border-bottom: 1px solid var(--bd-color);
+}
+
+.login-logo {
+    height: 56px;
+    border-radius: var(--radius-sm);
+}
+
+.login-brand {
+    text-align: left;
+}
+
+.brand-sub {
+    display: block;
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--text-color-secondary);
+    line-height: 1.1;
+}
+
+.brand-main {
+    display: block;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-color);
+    letter-spacing: -0.5px;
+}
+
+.login-body {
+    padding: 32px;
+}
+
+.qr-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.qr-wrapper {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1px solid var(--bd-color);
+}
+
+.qr-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.qr-overlay {
     position: absolute;
     width: 100%;
     height: 100%;
-    backdrop-filter: blur(8px);
-    color: white;
+    backdrop-filter: blur(12px);
+    color: var(--text-color);
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background-color: rgba(255, 255, 255, 0.3);
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 1;
+    background: var(--bg-color-glass);
+}
+
+.qr-hint {
+    font-size: 13px;
+    color: var(--text-color-secondary);
+}
+
+.alt-login {
+    font-size: 13px;
+}
+
+.cookie-section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.cookie-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
 }
 </style>

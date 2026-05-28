@@ -1,12 +1,14 @@
 <template>
     <el-container class="container">
-        <el-main v-loading="loading">
-            <div class="colbox" id="container">
-                <img id="cover" :src="detail.pic" />
-                <div class="rowbox" style="justify-content: space-between;">
-                    <div id="name">{{ detail.name }}</div>
-                    <el-button @click="listen_all" type="primary" style="width: 200px;"><box-icon color="white"
-                            name='add-to-queue'></box-icon>播放热门歌曲</el-button>
+        <el-main v-loading="loading" style="padding: 28px 36px; overflow: auto;">
+            <div class="detail-header">
+                <img class="detail-cover artist-cover" :src="detail.pic" />
+                <div class="detail-meta">
+                    <div class="detail-type">歌手</div>
+                    <div class="detail-name">{{ detail.name }}</div>
+                    <el-button @click="listen_all" type="primary" style="margin-top: 16px;">
+                        <box-icon name='add-to-queue' color="#fff" style="margin-right: 6px;"></box-icon>播放热门歌曲
+                    </el-button>
                 </div>
             </div>
             <el-tabs v-model="activeName">
@@ -14,27 +16,23 @@
                     <SongTable :list="list"></SongTable>
                 </el-tab-pane>
                 <el-tab-pane label="专辑" name="album">
-                    <el-container class="container">
-                        <el-main class="colbox" style="flex-wrap: wrap;width: 100%;">
-                            <el-card v-on:click="display_album(item)" v-for="item in albums" :key="item.id"
-                                class="songlist_card" :body-style="{ padding: '10px', textAlign: 'left' }">
-                                <img style="height: 150px;width: 150px;border-radius: 5px;" :src="item.cover_img">
-                                <div style="padding: 5px;overflow: hidden;">
-                                    <p style="margin:0;padding:0;font-size: 14px;">{{ item.name }}</p>
-                                    <p style="margin:0;padding:0;font-size: 8px;">{{ item.artist }}</p>
-                                    <p style="margin:0;padding:0;font-size: 8px;">{{ item.count }}首</p>
-                                </div>
-                            </el-card>
-                        </el-main>
-                        <el-footer class="footer">
-                            <el-pagination @current-change="handle_page_change" v-model:current-page="page"
-                                :default-page-size="30" background layout="prev, pager, next,jumper" :total="count" />
-                            <el-text>总共{{ count }}个搜索结果</el-text>
-                        </el-footer>
-                    </el-container>
+                    <div class="card-grid">
+                        <el-card v-on:click="display_album(item)" v-for="item in albums" :key="item.id" class="songlist_card"
+                            :body-style="{ padding: '0' }" shadow="never">
+                            <img class="card-cover" :src="item.cover_img">
+                            <div class="card-info">
+                                <p class="card-name">{{ item.name }}</p>
+                                <p class="card-meta">{{ item.artist }} · {{ item.count }}首</p>
+                            </div>
+                        </el-card>
+                    </div>
+                    <el-footer class="footer" height="50px">
+                        <el-pagination @current-change="handle_page_change" v-model:current-page="page"
+                            :default-page-size="30" background layout="prev, pager, next, jumper" :total="count" />
+                    </el-footer>
                 </el-tab-pane>
                 <el-tab-pane label="简介" name="description">
-                    {{ detail.description ? detail.description : "暂无简介" }}
+                    <div class="description-text">{{ detail.description || '暂无简介' }}</div>
                 </el-tab-pane>
             </el-tabs>
         </el-main>
@@ -42,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAppStore } from '@/stores'
 import axios from '@/utils/request'
@@ -97,7 +95,6 @@ function onRouteChange() {
 
 route && onRouteChange()
 
-import { watch } from 'vue'
 watch(() => route.query, () => {
     id.value = Number(route.query.id)
     if (id.value) init()
@@ -105,25 +102,86 @@ watch(() => route.query, () => {
 </script>
 
 <style scoped>
-#container {
-    margin: 20px;
-    margin-left: 0;
+.detail-header {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 28px;
 }
 
-#cover {
-    width: 180px;
-    height: 180px;
-    margin-right: 20px;
-    border-radius: 10px;
+.detail-cover {
+    width: 200px;
+    height: 200px;
+    border-radius: var(--radius-lg);
+    object-fit: cover;
+    box-shadow: var(--shadow-lg);
+    flex-shrink: 0;
 }
 
-#description {
-    font-size: 18px;
+.artist-cover {
+    border-radius: 50%;
+}
+
+.detail-meta {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.detail-type {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--accent);
+    margin-bottom: 8px;
+}
+
+.detail-name {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-color);
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+}
+
+.card-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.card-cover {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    display: block;
+}
+
+.card-info {
+    padding: 12px;
+}
+
+.card-name {
+    margin: 0;
+    font-size: 13px;
     font-weight: 500;
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-#name {
-    font-size: 40px;
-    font-weight: 800;
+.card-meta {
+    margin: 4px 0 0;
+    font-size: 11px;
+    color: var(--text-color-tertiary);
+}
+
+.description-text {
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--text-color-secondary);
+    max-width: 600px;
 }
 </style>

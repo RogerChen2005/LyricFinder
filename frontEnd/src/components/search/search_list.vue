@@ -1,22 +1,21 @@
 <template>
-    <el-container class="container">
-        <el-main v-loading="loading" class="colbox" style="flex-wrap: wrap;width: 100%;">
+    <div id="main_content" class="container" style="padding: 24px 36px; box-sizing: border-box;">
+        <div class="card-grid" v-loading="loading">
             <el-card v-on:click="display_list(item)" v-for="item in lists" :key="item.id" class="songlist_card"
-                :body-style="{ padding: '10px', textAlign: 'left' }">
-                <img style="height: 150px;width: 150px;border-radius: 5px;" :src="item.cover_img">
-                <div style="padding: 5px;overflow: hidden;">
-                    <p style="margin:0;padding:0;font-size: 14px;">{{ item.name }}</p>
-                    <p style="margin:0;padding:0;font-size: 8px;">{{ item.artist }}</p>
-                    <p style="margin:0;padding:0;font-size: 8px;">{{ item.count }}首</p>
+                :body-style="{ padding: '0' }" shadow="never">
+                <img class="card-cover" :src="item.cover_img">
+                <div class="card-info">
+                    <p class="card-name">{{ item.name }}</p>
+                    <p class="card-meta">{{ item.creator }} · {{ item.count }}首</p>
                 </div>
             </el-card>
-        </el-main>
-        <el-footer class="footer">
+        </div>
+        <div class="footer" style="margin-top: 20px;">
             <el-pagination @current-change="handle_page_change" :current-page="page" :default-page-size="30" background
-                layout="prev, pager, next,jumper" :total="count" />
-            <el-text>总共{{count}}个搜索结果</el-text>
-        </el-footer>
-    </el-container>
+                layout="prev, pager, next, jumper" :total="count" />
+            <div class="result-count">共 {{ count }} 个结果</div>
+        </div>
+    </div>
 </template>
 
 <script setup lang="ts">
@@ -65,10 +64,49 @@ watch(() => route.query, () => {
 </script>
 
 <style scoped>
+.card-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.card-cover {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    display: block;
+}
+
+.card-info {
+    padding: 12px;
+}
+
+.card-name {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.card-meta {
+    margin: 4px 0 0;
+    font-size: 11px;
+    color: var(--text-color-tertiary);
+}
+
 .footer {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    flex-direction: row;
-    justify-content: center;
+    gap: 8px;
+}
+
+.result-count {
+    font-size: 12px;
+    color: var(--text-color-tertiary);
 }
 </style>
