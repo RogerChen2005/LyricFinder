@@ -4,17 +4,8 @@
     </div>
 </template>
 
-<script>
+<script setup lang="ts">
 import Post from '@/md/about.md'
-export default {
-    name: "ManualPage",
-    components:{
-        Post
-    },
-    created() {
-
-    }
-}
 </script>
 
 <style>

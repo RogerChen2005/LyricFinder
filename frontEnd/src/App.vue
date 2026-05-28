@@ -2,26 +2,18 @@
     <router-view id='body'></router-view>
 </template>
 
-<script>
-import { Queue } from './js/queue.js'
-import { _data } from './js/data_init.js'
-const default_settings = { "mode": 0, "lyric": true, "tlyric": true, "quality": "exhigh", "level": "exhigh" };
+<script setup lang="ts">
+import { useAppStore } from './stores'
+import { useRouter } from 'vue-router'
 
-export default {
-    name: "App",
-    methods: {
-    },
-    created() {
-        let cookie = localStorage.getItem('cookie');
-        this.$store.state.classManager.init_darkmode();
-        this.$store.state.queue = new Queue();
-        this.$store.state.data = new _data()
-        let settings = JSON.parse(localStorage.getItem("settings"));
-        this.$store.state.settings = settings ? settings : default_settings;
-        if (!cookie) {
-            this.$router.push('/login');
-        }
-    }
+const store = useAppStore()
+const router = useRouter()
+
+store.init()
+
+const cookie = localStorage.getItem('cookie')
+if (!cookie) {
+    router.push('/login')
 }
 </script>
 
@@ -31,7 +23,6 @@ export default {
         translate: 100px 0;
         opacity: 0;
     }
-
     100% {
         translate: 0 0;
         opacity: 1;

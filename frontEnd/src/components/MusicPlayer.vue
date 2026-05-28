@@ -1,7 +1,4 @@
 <template>
-    <!-- <transition name="drawer-show">
-        
-    </transition> -->
     <CDrawer v-model:visible="list_show">
         <template #content>
             <div id="drawer" class="drawer-body" tabindex="-1">
@@ -35,7 +32,7 @@
                                 <el-button link type="danger" size="small" @click="remove(scope.$index)">移除</el-button>
                             </div>
                             <div style="display: flex;flex-direction: row;">
-                                <el-button link type="primary" size="small" @click="change(scope.$index)">播放</el-button>
+                                <el-button link type="primary" size="small" @click="changeSong(scope.$index)">播放</el-button>
                             </div>
                         </template>
                     </el-table-column>
@@ -43,21 +40,21 @@
             </div>
         </template>
     </CDrawer>
-    <CPage ref="fullscreen" v-model:visible="full_screened" :bg="data.album ? `url(${data.album.cover})` : ''"
+    <CPage ref="fullscreenEl" v-model:visible="full_screened" :bg="data.album ? `url(${data.album.cover})` : undefined"
         @close="handle_page_close">
         <template #left>
-            <img id="full-cover" :src="data.album ? data.album.cover : null">
+            <img id="full-cover" :src="data.album ? data.album.cover : undefined">
             <div class="full-title" style="text-align: left">
                 <div id="full-title">{{ data.title }}</div>
                 <div id="full-artist"
-                    @click="() => { $refs.fullscreen.handleClose(); display_artist(data.artists[0]) }">
-                    {{ data.artists[0].name }}
+                    @click="() => { fullscreenEl?.handleClose(); data.artists && display_artist(data.artists[0]) }">
+                    {{ data.artists?.[0]?.name }}
                 </div>
             </div>
             <div class="full-slider colbox">
                 <div>{{ toTime(current) }}</div>
                 <input id="full-input-range" type="range" :value="current" :max="data.duration"
-                    @input="(e) => changeLong(Number(e.target.value))" />
+                    @input="(e) => changeLong(Number((e.target as HTMLInputElement).value))" />
                 <div>{{ toTime(data.duration) }}</div>
             </div>
             <div class="full-controllers">
@@ -78,7 +75,7 @@
             </div>
         </template>
         <template #right>
-            <div id="lyrics" ref="lyrics">
+            <div id="lyrics" ref="lyricsEl">
                 <div class="lyric" v-for="l in data.lyric" :key="l.t" @click="() => { play(); changeLong(l.t); }">
                     <div> {{ l.c }}</div>
                     <div class="full-translate-lyric"> {{ l.tc }}</div>
@@ -86,20 +83,20 @@
             </div>
         </template>
     </CPage>
-    <div ref="player" id="player">
+    <div ref="playerEl" id="player">
         <div id="slider">
             <el-slider size="small" v-model="current" :max="data.duration" :show-tooltip="false"
                 @input="changeLong"></el-slider>
         </div>
-        <audio :src="data.music_url" @canplay="showLong" ref="audio" autoplay="" @timeupdate="getCurr"
+        <audio :src="data.music_url" @canplay="showLong" ref="audioEl" autoplay @timeupdate="getCurr"
             @pause="is_stop = true" @play="is_stop = false" @ended="ended"></audio>
         <div id="player-ui">
             <div id="left">
-                <img @click="open_fullscreen" id="album-cover" :src="data.album ? data.album.cover : null">
+                <img @click="open_fullscreen" id="album-cover" :src="data.album ? data.album.cover : undefined">
                 <div style="text-align: left;width: 100%;overflow: hidden;">
                     <p class="hide_text" id="title">{{ data.title }}</p>
                     <div class="hide_text" id="artist">
-                        <el-link v-if="data.artists" @click="display_artist(data.artists[0])">{{ data.artists[0].name
+                        <el-link v-if="data.artists" @click="display_artist(data.artists[0])">{{ data.artists[0]?.name
                             }}</el-link>
                     </div>
                 </div>
@@ -130,308 +127,371 @@
             </div>
         </div>
     </div>
-    <div ref="show_button" id="show_button" @click="show">
+    <div ref="showButtonEl" id="show_button" @click="show">
         <box-icon color="#EEEEEE" type='solid' name='music'></box-icon>
     </div>
 </template>
 
-<script>
+<script setup lang="ts">
+import { ref, reactive } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { useAppStore } from '@/stores'
+import axios from '@/utils/request'
 import CDrawer from './UI/CDrawer.vue'
 import CPage from './UI/CPage.vue'
 
-export default {
-    name: 'MusicPlayer',
-    components: {
-        CDrawer, CPage
-    },
-    props: {
-    },
-    data() {
-        return {
-            data: {
-                music_url: "",
-                duration: 0,
-                album_img: "",
-                title: "未播放歌曲",
-            },
-            current: "100",
-            isPlaying: "play",
-            list_show: false,
-            playlist: [],
-            current_playing: 0,
-            mode: 0,
-            modes: ['列表循环', '单曲循环', '随机播放'],
-            full_screened: false
-        }
-    },
-    methods: {
-        open_fullscreen() {
-            if (!this.data.lyric) {
-                this.$axios.post("/func", {
-                    target: "get_lyric",
-                    data: {
-                        id: this.data.id
-                    }
-                }).then((res) => {
-                    this.data.lyric = [];
-                    if (typeof res.data.lyric === 'string') {
-                        let arr = res.data.lyric.split('\n');
-                        for (let ele of arr) {
-                            let first_index = ele.indexOf('[');
-                            let second_index = ele.indexOf(']');
-                            if (first_index != undefined && second_index) {
-                                let time = ele.substring(first_index + 1, second_index);
-                                let third_index = time.indexOf(':');
-                                let t = Number(time.substring(0, third_index)) * 60 + Number(time.substring(third_index + 1));
-                                this.data.lyric.push({ t, c: ele.substring(second_index + 1) });
-                            }
-                            else this.data.lyric.push({ t: 0, c: ele })
-                        }
-                        if (res.data.tlyric) {
-                            let arr_t = res.data.tlyric.split('\n');
-                            let index = 0;
-                            for (let ele of arr_t) {
-                                let first_index = ele.indexOf('[');
-                                let second_index = ele.indexOf(']');
-                                if (first_index != undefined && second_index) {
-                                    let time = ele.substring(first_index + 1, second_index);
-                                    let third_index = time.indexOf(':');
-                                    let t = Number(time.substring(0, third_index)) * 60 + Number(time.substring(third_index + 1));
-                                    while(index < this.data.lyric.length - 1 && this.data.lyric[index+1].t <= t) index++;
-                                    this.data.lyric[index].tc = ele.substring(second_index + 1);
-                                }
-                            }
-                        }
-                    }
-                    this.render_lyric();
-                });
-            }
-            else this.render_lyric();
-        },
-        render_lyric() {
-            this.full_screened = true;
-            this.currentLyric = 0;
-            setTimeout(()=>this.$refs.lyrics.children[this.currentLyric].classList.add('current-lyric'),0)
-            this.lyricSelector = setInterval(() => {
-                if (this.isPlaying === 'pause') {
-                    let ct = parseInt(this.$refs.audio.currentTime);
-                    let cl = this.currentLyric;
-                    let next = cl;
-                    while (this.data.lyric[next] && ct > this.data.lyric[next].t) next++;
-                    if (next > cl + 1) {
-                        this.$refs.lyrics.children[cl].classList.remove('current-lyric');
-                        this.$refs.lyrics.children[next - 1].classList.add('current-lyric');
-                        this.$refs.lyrics.scrollTo({
-                            top: this.$refs.lyrics.children[next - 1].offsetTop - 200,
-                            behavior: "smooth"
-                        })
-                        this.currentLyric = next - 1;
-                    }
-                }
-            }, 100)
-        },
-        handle_page_close() {
-            if (this.lyricSelector) {
-                clearInterval(this.lyricSelector);
-                console.log('close');
-            }
-        },
-        toTime(sec) {
-            let s = sec % 60 < 10 ? ('0' + sec % 60) : sec % 60
-            let min = Math.floor(sec / 60) < 10 ? ('0' + Math.floor(sec / 60)) : Math.floor(sec / 60)
-            return min + ':' + s
-        },
-        getCurr() { this.current = parseInt(this.$refs.audio.currentTime); },
-        showLong() { this.data.duration = parseInt(this.$refs.audio.duration); },
-        changeLong(ct) {
-            this.$refs.audio.currentTime = ct;
-        },
-        plays() {
-            if (this.isPlaying == "play") {
-                this.$refs.audio.play();
-                this.isPlaying = "pause";
-            } else {
-                this.$refs.audio.pause()
-                this.isPlaying = "play";
-            }
-        },
-        find_index(id){
-            for(let index in this.playlist){
-                if(this.playlist[index].id === id) return index;
-            }
-            return -1;
-        },
-        init(data) {
-            if(data.id){
-                let index = this.find_index(data.id);
-                if(index === -1){
-                    this.playlist.push(data);
-                    this.change(this.playlist.length - 1);
-                }
-                else this.change(index);
-            }
-        },
-        nextPlay(data){
-            if(data.id){
-                let index = this.find_index(data.id);
-                if(index === -1){
-                    this.playlist.splice(this.current_playing+1,0,data);
-                    ElMessage("已添加至播放列表");
-                }
-                else if(index != this.current_playing){
-                    let song = this.playlist.splice(index,1);
-                    if(index < this.current_playing) this.current_playing -=1;
-                    this.playlist.splice(this.current_playing+1,0,song[0]);
-                }
-            }
-        },
-        change(index) {
-            this.isPlaying = "pause";
-            // this.data = {};
-            let quality = "exhigh";
-            let settings = this.$store.state.settings;
-            if (settings && settings.quality) {
-                quality = settings.quality;
-            }
-            this.$axios.post("func", {
-                target: "get_song_url",
-                data: {
-                    id: this.playlist[index].id,
-                    level: quality
-                }
-            }).then((result) => {
-                this.data = this.playlist[index];
-                this.data.music_url = result.data.url;
-                this.current_playing = index;
-                setTimeout(() => this.apply_media_session(this.data), 0)
-                if (this.full_screened) this.open_fullscreen();
-                this.show();
-            })
-        },
-        remove(index) {
-            this.playlist.splice(index, 1);
-            if (index === this.current_playing) {
-                if (this.playlist.length === 0) {
-                    this.data = {
-                        music_url: "",
-                        duration: 0,
-                        album_img: ""
-                    };
-                }
-                else this.change(index);
-            }
-            else if (index < this.current_playing) {
-                this.current_playing -= 1;
-            }
-        },
-        ended() {
-            switch (this.mode) {
-                default:
-                    this.change((this.current_playing + 1) % this.playlist.length);
-                    break;
-                case 1:
-                    this.change(this.current_playing);
-                    break;
-                case 2: {
-                    let rand = parseInt(Math.random() * (this.playlist.length - 1) + 1);
-                    this.change((this.current_playing + rand) % this.playlist.length);
-                    break;
-                }
-            }
-        },
-        next() {
-            if (this.mode === 2) {
-                let rand = parseInt(Math.random() * (this.playlist.length - 1) + 1);
-                this.change((this.current_playing + rand) % this.playlist.length);
-            }
-            else this.change((this.current_playing + 1) % this.playlist.length);
-        },
-        prev() {
-            if (this.mode === 2) {
-                let rand = parseInt(Math.random() * (this.playlist.length - 1) + 1);
-                this.change((this.current_playing + rand) % this.playlist.length);
-            }
-            else {
-                let n = this.current_playing - 1;
-                let m = this.playlist.length;
-                this.change(((n % m) + m) % m);
-            }
-        },
-        show() {
-            this.$refs.player.style.display = "block";
-            setTimeout(() => {
-                this.$refs.player.style.transform = "translate(-50%,0)";
-                this.$refs.show_button.style.transform = "translateX(10vw)";
-            }, 0)
-        },
-        hide() {
-            this.$refs.player.style.transform = "translate(-50%,30vh)";
-            this.$refs.show_button.style.transform = "translateX(0)";
-            setTimeout(() => this.$refs.player.style.display = "none", 500);
-        },
-        change_mode() {
-            this.mode = (this.mode + 1) % 3;
-            ElMessage({
-                type: 'info',
-                message: this.modes[this.mode]
-            })
-        },
-        listen_all(queue) {
-            this.playlist = queue;
-            this.change(0);
-        },
-        display_album(item) {
-            this.list_show = false
-            this.$router.push(`./album?id=${item.id}`);
-        },
-        display_artist(item) {
-            this.list_show = false
-            this.$router.push(`./artist?id=${item.id}`);
-        },
-        play() {
-            this.isPlaying = "pause"; this.$refs.audio.play();
-        },
-        pause() {
-            this.isPlaying = "play"; this.$refs.audio.pause();
-        },
-        apply_media_session(data) {
-            if ("mediaSession" in navigator) {
-                navigator.mediaSession.metadata = new MediaMetadata({
-                    title: data.title,
-                    artist: data.artists[0].name,
-                    album: data.album.name,
-                    artwork: [
-                        { src: data.album.cover, type: 'image/jpeg', sizes: "1024x1024" },
-                    ]
-                });
-                const actionHandlers = [
-                    ['play', this.play],
-                    ['pause', this.pause],
-                    ['previoustrack', this.prev],
-                    ['nexttrack', this.next],
-                ];
-                for (const [action, handler] of actionHandlers) {
-                    try {
-                        navigator.mediaSession.setActionHandler(action, handler);
-                    } catch (error) {
-                        console.log(`The media session action "${action}" is not supported yet.`);
-                    }
-                }
-            }
+interface LyricLine {
+    t: number
+    c: string
+    tc?: string
+}
 
-        },
-        download() {
-            this.$store.state.queue.add(this.playlist[this.current_playing]);
+interface Artist {
+    id: number
+    name: string
+}
+
+interface Album {
+    id: number
+    name: string
+    cover: string
+}
+
+interface SongData {
+    id?: number
+    music_url: string
+    duration: number
+    album_img: string
+    title: string
+    album?: Album
+    artists?: Artist[]
+    lyric?: LyricLine[]
+}
+
+interface PlaylistItem {
+    id: number
+    title: string
+    artists: Artist[]
+    album: Album
+}
+
+const router = useRouter()
+const store = useAppStore()
+
+const fullscreenEl = ref<InstanceType<typeof CPage>>()
+const lyricsEl = ref<HTMLElement>()
+const playerEl = ref<HTMLElement>()
+const audioEl = ref<HTMLAudioElement>()
+const showButtonEl = ref<HTMLElement>()
+
+const data = reactive<SongData>({
+    music_url: '',
+    duration: 0,
+    album_img: '',
+    title: '未播放歌曲'
+})
+const current = ref(100)
+const isPlaying = ref('play')
+const is_stop = ref(true)
+const list_show = ref(false)
+const playlist = ref<PlaylistItem[]>([])
+const current_playing = ref(0)
+const mode = ref(0)
+const modes = ['列表循环', '单曲循环', '随机播放']
+const full_screened = ref(false)
+let currentLyric = 0
+let lyricSelector: ReturnType<typeof setInterval> | undefined
+
+function open_fullscreen() {
+    if (!data.lyric) {
+        axios.post('/func', {
+            target: 'get_lyric',
+            data: { id: data.id }
+        }).then((res) => {
+            data.lyric = []
+            if (typeof res.data.lyric === 'string') {
+                const arr = res.data.lyric.split('\n')
+                for (const ele of arr) {
+                    const first_index = ele.indexOf('[')
+                    const second_index = ele.indexOf(']')
+                    if (first_index !== undefined && second_index) {
+                        const time = ele.substring(first_index + 1, second_index)
+                        const third_index = time.indexOf(':')
+                        const t = Number(time.substring(0, third_index)) * 60 + Number(time.substring(third_index + 1))
+                        data.lyric!.push({ t, c: ele.substring(second_index + 1) })
+                    } else {
+                        data.lyric!.push({ t: 0, c: ele })
+                    }
+                }
+                if (res.data.tlyric) {
+                    const arr_t = res.data.tlyric.split('\n')
+                    let index = 0
+                    for (const ele of arr_t) {
+                        const first_index = ele.indexOf('[')
+                        const second_index = ele.indexOf(']')
+                        if (first_index !== undefined && second_index) {
+                            const time = ele.substring(first_index + 1, second_index)
+                            const third_index = time.indexOf(':')
+                            const t = Number(time.substring(0, third_index)) * 60 + Number(time.substring(third_index + 1))
+                            while (index < data.lyric!.length - 1 && data.lyric![index + 1].t <= t) index++
+                            data.lyric![index].tc = ele.substring(second_index + 1)
+                        }
+                    }
+                }
+            }
+            render_lyric()
+        })
+    } else {
+        render_lyric()
+    }
+}
+
+function render_lyric() {
+    full_screened.value = true
+    currentLyric = 0
+    setTimeout(() => lyricsEl.value?.children[currentLyric]?.classList.add('current-lyric'), 0)
+    lyricSelector = setInterval(() => {
+        if (isPlaying.value === 'pause' && audioEl.value && data.lyric) {
+            const ct = parseInt(String(audioEl.value.currentTime))
+            const cl = currentLyric
+            let next = cl
+            while (data.lyric[next] && ct > data.lyric[next].t) next++
+            if (next > cl + 1) {
+                lyricsEl.value?.children[cl]?.classList.remove('current-lyric')
+                lyricsEl.value?.children[next - 1]?.classList.add('current-lyric')
+                lyricsEl.value?.scrollTo({
+                    top: (lyricsEl.value?.children[next - 1] as HTMLElement)?.offsetTop - 200,
+                    behavior: 'smooth'
+                })
+                currentLyric = next - 1
+            }
         }
-    },
-    created() {
-        this.$store.state.player = {
-            listen:(data)=>this.init(data),
-            listen_all:(data)=>this.listen_all(data),
-            next:(data)=>this.nextPlay(data),
+    }, 100)
+}
+
+function handle_page_close() {
+    if (lyricSelector) {
+        clearInterval(lyricSelector)
+    }
+}
+
+function toTime(sec: number): string {
+    const s = sec % 60 < 10 ? '0' + sec % 60 : sec % 60
+    const min = Math.floor(sec / 60) < 10 ? '0' + Math.floor(sec / 60) : Math.floor(sec / 60)
+    return min + ':' + s
+}
+
+function getCurr() {
+    if (audioEl.value) current.value = parseInt(String(audioEl.value.currentTime))
+}
+
+function showLong() {
+    if (audioEl.value) data.duration = parseInt(String(audioEl.value.duration))
+}
+
+function changeLong(ct: number) {
+    if (audioEl.value) audioEl.value.currentTime = ct
+}
+
+function plays() {
+    if (isPlaying.value === 'play') {
+        audioEl.value?.play()
+        isPlaying.value = 'pause'
+    } else {
+        audioEl.value?.pause()
+        isPlaying.value = 'play'
+    }
+}
+
+function find_index(id: number): number {
+    for (const index in playlist.value) {
+        if (playlist.value[index].id === id) return Number(index)
+    }
+    return -1
+}
+
+function init(songData: PlaylistItem) {
+    if (songData.id) {
+        const index = find_index(songData.id)
+        if (index === -1) {
+            playlist.value.push(songData)
+            changeSong(playlist.value.length - 1)
+        } else {
+            changeSong(index)
         }
     }
+}
+
+function nextPlay(songData: PlaylistItem) {
+    if (songData.id) {
+        const index = find_index(songData.id)
+        if (index === -1) {
+            playlist.value.splice(current_playing.value + 1, 0, songData)
+            ElMessage('已添加至播放列表')
+        } else if (index !== current_playing.value) {
+            const song = playlist.value.splice(index, 1)
+            if (index < current_playing.value) current_playing.value -= 1
+            playlist.value.splice(current_playing.value + 1, 0, song[0])
+        }
+    }
+}
+
+function changeSong(index: number) {
+    isPlaying.value = 'pause'
+    let quality = 'exhigh'
+    const settings = store.settings
+    if (settings && settings.quality) quality = settings.quality
+    axios.post('func', {
+        target: 'get_song_url',
+        data: {
+            id: playlist.value[index].id,
+            level: quality
+        }
+    }).then((result) => {
+        Object.assign(data, playlist.value[index])
+        data.music_url = result.data.url
+        current_playing.value = index
+        setTimeout(() => apply_media_session(data), 0)
+        if (full_screened.value) open_fullscreen()
+        show()
+    })
+}
+
+function remove(index: number) {
+    playlist.value.splice(index, 1)
+    if (index === current_playing.value) {
+        if (playlist.value.length === 0) {
+            Object.assign(data, { music_url: '', duration: 0, album_img: '' })
+        } else {
+            changeSong(index)
+        }
+    } else if (index < current_playing.value) {
+        current_playing.value -= 1
+    }
+}
+
+function ended() {
+    switch (mode.value) {
+        default:
+            changeSong((current_playing.value + 1) % playlist.value.length)
+            break
+        case 1:
+            changeSong(current_playing.value)
+            break
+        case 2: {
+            const rand = parseInt(String(Math.random() * (playlist.value.length - 1) + 1))
+            changeSong((current_playing.value + rand) % playlist.value.length)
+            break
+        }
+    }
+}
+
+function next() {
+    if (mode.value === 2) {
+        const rand = parseInt(String(Math.random() * (playlist.value.length - 1) + 1))
+        changeSong((current_playing.value + rand) % playlist.value.length)
+    } else {
+        changeSong((current_playing.value + 1) % playlist.value.length)
+    }
+}
+
+function prev() {
+    if (mode.value === 2) {
+        const rand = parseInt(String(Math.random() * (playlist.value.length - 1) + 1))
+        changeSong((current_playing.value + rand) % playlist.value.length)
+    } else {
+        const n = current_playing.value - 1
+        const m = playlist.value.length
+        changeSong(((n % m) + m) % m)
+    }
+}
+
+function show() {
+    if (playerEl.value) {
+        playerEl.value.style.display = 'block'
+        setTimeout(() => {
+            if (playerEl.value) playerEl.value.style.transform = 'translate(-50%,0)'
+            if (showButtonEl.value) showButtonEl.value.style.transform = 'translateX(10vw)'
+        }, 0)
+    }
+}
+
+function hide() {
+    if (playerEl.value) {
+        playerEl.value.style.transform = 'translate(-50%,30vh)'
+        if (showButtonEl.value) showButtonEl.value.style.transform = 'translateX(0)'
+        setTimeout(() => {
+            if (playerEl.value) playerEl.value.style.display = 'none'
+        }, 500)
+    }
+}
+
+function change_mode() {
+    mode.value = (mode.value + 1) % 3
+    ElMessage({ type: 'info', message: modes[mode.value] })
+}
+
+function listen_all(queue: PlaylistItem[]) {
+    playlist.value = queue
+    changeSong(0)
+}
+
+function display_album(item: { id: number }) {
+    list_show.value = false
+    router.push(`./album?id=${item.id}`)
+}
+
+function display_artist(item: { id: number }) {
+    list_show.value = false
+    router.push(`./artist?id=${item.id}`)
+}
+
+function play() {
+    isPlaying.value = 'pause'
+    audioEl.value?.play()
+}
+
+function pause() {
+    isPlaying.value = 'play'
+    audioEl.value?.pause()
+}
+
+function apply_media_session(songData: SongData) {
+    if ('mediaSession' in navigator && songData.artists && songData.album) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+            title: songData.title,
+            artist: songData.artists[0].name,
+            album: songData.album.name,
+            artwork: [
+                { src: songData.album.cover, type: 'image/jpeg', sizes: '1024x1024' }
+            ]
+        })
+        const actionHandlers: [MediaSessionAction, (() => void) | null][] = [
+            ['play', play],
+            ['pause', pause],
+            ['previoustrack', prev],
+            ['nexttrack', next]
+        ]
+        for (const [action, handler] of actionHandlers) {
+            try {
+                navigator.mediaSession.setActionHandler(action, handler)
+            } catch (error) {
+                console.log(`The media session action "${action}" is not supported yet.`)
+            }
+        }
+    }
+}
+
+function download() {
+    store.queue?.add(playlist.value[current_playing.value])
+}
+
+// Expose player API to store
+;(store as unknown as Record<string, Record<string, Function>>).player = {
+    listen: (d: PlaylistItem) => init(d),
+    listen_all: (d: PlaylistItem[]) => listen_all(d),
+    next: (d: PlaylistItem) => nextPlay(d)
 }
 </script>
 
@@ -449,9 +509,7 @@ export default {
     outline: none;
     border: solid 1px var(--bd-color);
     border-radius: 3px;
-    /* height: 12px; */
     background-color: transparent;
-    /* backdrop-filter: blur(5px); */
     opacity: 0.8;
 }
 

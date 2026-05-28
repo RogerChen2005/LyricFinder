@@ -2,7 +2,7 @@
     <div id="main_content" class="container">
         <div v-if="!isLogin" style="text-align: center;">
             <el-empty description="未登录" />
-            <el-button type="primary" @click="$router.push('/login')">登陆</el-button>
+            <el-button type="primary" @click="router.push('/login')">登陆</el-button>
         </div>
         <div v-if="isLogin" id="user-page">
             <div id="op">
@@ -21,78 +21,63 @@
                 <img :src="avurl" />
             </el-avatar>
             <el-text id="name">{{ name }} <img v-if="isvip" style="width: 50px;vertical-align: middle;"
-                    :src="require('@/assets/vip.png')"></el-text>
+                    :src="vipImg"></el-text>
             <el-text id="sg">{{ sig }}</el-text>
         </div>
     </div>
 </template>
-<script>
-import { ElNotification } from 'element-plus'
 
-export default {
-    name: 'UserPage',
-    props: {
-        login: Function
-    },
-    data() {
-        return {
-            isLogin: false,
-            name: "",
-            bgurl: "",
-            avurl: "",
-            sig: ""
-        }
-    },
-    methods: {
-        user_inf() {
-            this.$store.state.data.update("profile", (data) => {
-                ElNotification({
-                    title: 'Success',
-                    message: '刷新成功',
-                    type: 'success',
-                });
-                this.refresh(data.profile);
-            }, (err) => {
-                console.log(err);
-                ElNotification({
-                    title: 'Error',
-                    message: '刷新失败',
-                    type: 'error',
-                });
-                this.exit();
-            })
-        },
-        refresh(profile) {
-            this.isLogin = true;
-            this.name = profile['nickname'];
-            this.bgurl = profile['backgroundUrl'];
-            this.avurl = profile['avatarUrl'];
-            this.sig = profile['signature'];
-            this.isvip = profile['isvip'];
-            return;
-        },
-        exit() {
-            this.$store.state.data.remove_all();
-            localStorage.removeItem("cookie");
-            this.isLogin = false;
-            this.$router.push('/login');
-            return;
-        }
-    },
-    created() {
-        this.$store.state.data.gets("profile", (data) => {
-            this.refresh(data.profile);
-        }, (err) => {
-            console.log(err);
-            ElNotification({
-                title: 'Error',
-                message: '刷新失败',
-                type: 'error',
-            });
-            this.exit();
-        })
-    }
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { ElNotification } from 'element-plus'
+import { useAppStore } from '@/stores'
+import vipImg from '@/assets/vip.png'
+
+const store = useAppStore()
+const router = useRouter()
+
+const isLogin = ref(false)
+const name = ref('')
+const bgurl = ref('')
+const avurl = ref('')
+const sig = ref('')
+const isvip = ref(false)
+
+function user_inf() {
+    store.data!.update('profile', (data) => {
+        ElNotification({ title: 'Success', message: '刷新成功', type: 'success' })
+        refresh(data.profile as Record<string, unknown>)
+    }, (err) => {
+        console.log(err)
+        ElNotification({ title: 'Error', message: '刷新失败', type: 'error' })
+        exit()
+    })
 }
+
+function refresh(profile: Record<string, unknown>) {
+    isLogin.value = true
+    name.value = profile['nickname'] as string
+    bgurl.value = profile['backgroundUrl'] as string
+    avurl.value = profile['avatarUrl'] as string
+    sig.value = profile['signature'] as string
+    isvip.value = profile['isvip'] as boolean
+}
+
+function exit() {
+    store.data!.remove_all()
+    localStorage.removeItem('cookie')
+    isLogin.value = false
+    router.push('/login')
+}
+
+store.data!.gets('profile', (data) => {
+    refresh(data.profile as Record<string, unknown>)
+}, (err) => {
+    console.log(err)
+    ElNotification({ title: 'Error', message: '刷新失败', type: 'error' })
+    exit()
+})
 </script>
 
 <style scoped>

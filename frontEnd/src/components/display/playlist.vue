@@ -20,63 +20,57 @@
     </el-container>
 </template>
 
-<script>
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useRoute } from 'vue-router'
+import { useAppStore } from '@/stores'
+import axios from '@/utils/request'
 import SongTable from './SongTable.vue'
-export default {
-    name: "albumPage",
-    components:{
-        SongTable
-    },
-    data() {
-        return {
-            id: 0,
-            count: 0,
-            index_start: 0,
-            list: [],
-            list_name: "",
-            visible: false,
-            loading: true,
-            load: () => { },
-            songlist: {}
+
+const store = useAppStore()
+const route = useRoute()
+
+const id = ref(0)
+const index_start = ref(0)
+const list = ref<any[]>([])
+const loading = ref(true)
+const songlist = ref<any>({})
+
+function handle_drawer_page_change(index: number) {
+    loading.value = true
+    axios.post('func', {
+        target: 'get_list_song',
+        data: {
+            id: id.value,
+            offset: (index - 1) * 30,
+            cookie: localStorage.getItem('cookie')
         }
-    },
-    methods: {
-        handle_drawer_page_change(index) {
-            this.loading = true;
-            this.$axios.post("func", {
-                target: "get_list_song",
-                data: {
-                    id: this.id,
-                    offset: (index - 1) * 30,
-                    cookie: localStorage.getItem("cookie")
-                }
-            }).then((res) => {
-                this.index_start = (index) * 30,
-                    this.list = res.data.songs;
-                this.loading = false;
-            })
-        },
-        listen_all() {
-            this.$store.state.player.listen_all(this.list);
-        },
-        init() {
-            this.$axios.post("func", {
-                target: "songlist_detail",
-                data: {
-                    id: this.id,
-                    cookie: localStorage.getItem("cookie")
-                }
-            }).then((res) => {
-                this.songlist = res.data;
-                this.handle_drawer_page_change(1);
-            })
-        }
-    },
-    created() {
-        this.id = this.$route.query.id;
-        if (this.id) this.init();
-    }
+    }).then((res) => {
+        index_start.value = index * 30
+        list.value = res.data.songs
+        loading.value = false
+    })
 }
+
+function listen_all() {
+    ;(store as unknown as Record<string, Record<string, Function>>).player?.listen_all(list.value)
+}
+
+function init() {
+    axios.post('func', {
+        target: 'songlist_detail',
+        data: {
+            id: id.value,
+            cookie: localStorage.getItem('cookie')
+        }
+    }).then((res) => {
+        songlist.value = res.data
+        handle_drawer_page_change(1)
+    })
+}
+
+id.value = Number(route.query.id)
+if (id.value) init()
 </script>
 
 <style scoped>

@@ -55,141 +55,126 @@
     </el-dialog>
 </template>
 
-<script>
-import axios from 'axios';
+<script setup lang="ts">
+import { ref, reactive } from 'vue'
+import axios from 'axios'
 import { ElMessage } from 'element-plus'
 
-export default {
-    name: 'FolderLyric',
-    data() {
-        return {
-            path: '',
-            queue: [],
-            loading: false,
-            dialog: {
-                show: false,
-                queue: [],
-                key: "",
-                index: 0,
-                loading: false
-            },
-            task_remain: 0
-        }
-    },
-    methods: {
-        async select_folder() {
-            this.path = await window.electronAPI.filePicker();
-            this.loading = true;
-            let result = await axios.post("http://localhost:3030/func", {
-                target: "get_folder_songs",
-                data: {
-                    path: this.path
-                }
-            })
-            this.queue = result.data.queue;
-            this.loading = false;
-            return;
-        },
-        count(message) {
-            let index = JSON.parse(message.data).message;
-            this.queue[index].current += 1;
-            this.task_remain -= 1;
-            if (this.task_remain === 0) {
-                this.queue.splice(0);
-                this.socket.close();
-                ElMessage({
-                    message: '下载完成',
-                    type: 'success',
-                });
-            }
-        },
-        download() {
-            let options = JSON.parse(localStorage.getItem('settings'));
-            this.task_remain = this.queue.length;
-            axios.post("http://localhost:3030/func", {
-                target: "download",
-                data: {
-                    queue: this.queue,
-                    options: {
-                        classify: false,
-                        use_origin_name: true,
-                        path:this.path,
-                        song:false,cover:false,lyric:true,
-                        tlyric:options?options.tlyric:true
-                    }
-                }
-            }).then((res) => {
-                console.log(res);
-                ElMessage({
-                    message: '下载已经开始',
-                    type: 'info',
-                });
-                let socket = new WebSocket('ws://localhost:3000');
-                this.socket = socket;
-                socket.addEventListener('open', function open() {
-                    console.log("Conneced!");
-                    socket.removeEventListener('open', open);
-                });
-                socket.addEventListener('message', this.count);
-            });
-            for (let i in this.queue) {
-                this.queue[i].current = 0;
-            }
-        },
-        remove(index) {
-            this.queue.splice(index, 1);
-            ElMessage({
-                message: '已移除',
-                type: 'success',
-            });
-        },
-        edit(index) {
-            this.dialog.show = true;
-            this.dialog.key = this.queue[index].search_key;
-            this.dialog.index = index;
-            this.handle_page_change(1);
-        },
-        key_check(e) {
-            if (e.keyCode === 13) {
-                this.to_search();
-            }
-        },
-        search_query(index, callback) {
-            // this.dialog.loading = true;
-            axios.post("http://localhost:3030/func", {
-                target: "search_query",
-                data: {
-                    key: this.dialog.key,
-                    offset: (index - 1) * 30
-                }
-            }
-            ).then(
-                (response) => {
-                    console.log(callback);
-                    if (typeof callback === "function") {
-                        callback(response.data);
-                    }
-                }
-            );
+interface QueueItem {
+    title: string
+    artists: string
+    album: string
+    search_key: string
+    id: number
+    current: number
+}
 
-        },
-        handle_page_change(val) {
-            this.search_query(val, (result) => {
-                this.dialog.loading = false;
-                this.dialog.queue = result.songs;
-                this.dialog.count = result.count;
-            })
-        },
-        choose(index) {
-            let dest = this.queue[this.dialog.index];
-            let src = this.dialog.queue[index];
-            dest.title = src.title;
-            dest.id = src.id;
-            dest.album = src.album,
-            dest.artists = src.artists;
-            this.dialog.show = false;
-        }
+const path = ref('')
+const queue = ref<QueueItem[]>([])
+const loading = ref(false)
+const dialog = reactive({
+    show: false,
+    queue: [] as Record<string, unknown>[],
+    key: '',
+    index: 0,
+    loading: false,
+    count: 0
+})
+const task_remain = ref(0)
+let socket: WebSocket | null = null
+
+async function select_folder() {
+    path.value = await (window as unknown as { electronAPI: { filePicker: () => Promise<string> } }).electronAPI.filePicker()
+    loading.value = true
+    const result = await axios.post('http://localhost:3030/func', {
+        target: 'get_folder_songs',
+        data: { path: path.value }
+    })
+    queue.value = result.data.queue
+    loading.value = false
+}
+
+function count_handler(message: MessageEvent) {
+    const index = JSON.parse(message.data).message
+    queue.value[index].current += 1
+    task_remain.value -= 1
+    if (task_remain.value === 0) {
+        queue.value.splice(0)
+        socket?.close()
+        ElMessage({ message: '下载完成', type: 'success' })
     }
+}
+
+function download() {
+    const options = JSON.parse(localStorage.getItem('settings') ?? 'null')
+    task_remain.value = queue.value.length
+    axios.post('http://localhost:3030/func', {
+        target: 'download',
+        data: {
+            queue: queue.value,
+            options: {
+                classify: false,
+                use_origin_name: true,
+                path: path.value,
+                song: false, cover: false, lyric: true,
+                tlyric: options ? options.tlyric : true
+            }
+        }
+    }).then((res) => {
+        console.log(res)
+        ElMessage({ message: '下载已经开始', type: 'info' })
+        socket = new WebSocket('ws://localhost:3000')
+        socket.addEventListener('open', function open() {
+            console.log('Connected!')
+            socket?.removeEventListener('open', open)
+        })
+        socket.addEventListener('message', count_handler)
+    })
+    for (const i in queue.value) {
+        queue.value[i].current = 0
+    }
+}
+
+function remove(index: number) {
+    queue.value.splice(index, 1)
+    ElMessage({ message: '已移除', type: 'success' })
+}
+
+function edit(index: number) {
+    dialog.show = true
+    dialog.key = queue.value[index].search_key
+    dialog.index = index
+    handle_page_change(1)
+}
+
+function search_query(index: number, callback?: (data: Record<string, unknown>) => void) {
+    axios.post('http://localhost:3030/func', {
+        target: 'search_query',
+        data: {
+            key: dialog.key,
+            offset: (index - 1) * 30
+        }
+    }).then((response) => {
+        if (typeof callback === 'function') callback(response.data)
+    })
+}
+
+function handle_page_change(val: number) {
+    search_query(val, (result) => {
+        dialog.loading = false
+        dialog.queue = result.songs as Record<string, unknown>[]
+        dialog.count = result.count as number
+    })
+}
+
+function choose(index: number) {
+    const dest = queue.value[dialog.index]
+    const src = dialog.queue[index]
+    dest.title = src.title as string
+    dest.id = src.id as number
+    dest.album = src.album as string
+    dest.artists = src.artists as string
+    dialog.show = false
 }
 </script>
 

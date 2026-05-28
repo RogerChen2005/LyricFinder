@@ -2,20 +2,14 @@
    <component :is="comp"></component>
 </template>
 
-<script>
-import Tools from './index.js'
-export default{
-  name: 'ToolsMain',
-  data(){
-    return{
-    }
-  },
-  created(){
-    this.comp = Tools[this.$route.params.name];
-  }
-}
+<script setup lang="ts">
+import { shallowRef } from 'vue'
+import { useRoute } from 'vue-router'
+import Tools from './index'
+
+const route = useRoute()
+const comp = shallowRef(Tools[route.params.name as string])
 </script>
 
 <style scoped>
-
 </style>

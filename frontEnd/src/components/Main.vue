@@ -4,7 +4,7 @@
       <el-menu id="menu" :default-active="current_tab" @select="onHandleSelect">
         <el-icon></el-icon><template #title>首页</template>
         <div id="logo">
-          <img :src="require('@/assets/icon.png')" style="width: 45%;" />
+          <img :src="icon" style="width: 45%;" />
         </div>
         <el-menu-item index="1">
           <el-icon><box-icon name="home"></box-icon></el-icon>
@@ -16,7 +16,7 @@
         </el-menu-item>
         <el-menu-item index="3">
           <el-icon>
-            <el-badge :value="$store.state.queue.length" :hidden="$store.state.queue.length == 0" class="item"><box-icon
+            <el-badge :value="store.queue?.length" :hidden="store.queue?.length === 0" class="item"><box-icon
                 name="download"></box-icon></el-badge>
           </el-icon>
           <template #title>下载</template>
@@ -49,66 +49,58 @@
   <MusicPlayer ref="player" id="player" />
 </template>
 
-<script>
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAppStore } from '@/stores'
 import MusicPlayer from './MusicPlayer.vue'
-const tabs = ['/', '/list', '/download', '/tools', '/user', '/about'];
+import icon from '@/assets/icon.png'
 
-function query_finder(key, query) {
-  let queries = query.split('&');
-  for (let i of queries) {
-    let temp = i.split('=');
-    if (temp[0] === key) {
-      return temp[1];
-    }
+const tabs = ['/', '/list', '/download', '/tools', '/user', '/about']
+
+const store = useAppStore()
+const router = useRouter()
+
+const current_tab = ref(2)
+const search_text = ref('')
+
+function query_finder(key: string, query: string): string | undefined {
+  const queries = query.split('&')
+  for (const i of queries) {
+    const temp = i.split('=')
+    if (temp[0] === key) return temp[1]
   }
 }
 
-export default {
-  name: 'MainPage',
-  components: {
-    MusicPlayer
-  },
-  data() {
-    return {
-      current_tab: 2,
-      queue: [],
-      search_text: "",
+function search() {
+  if (search_text.value.startsWith('https://y.music.163.com') || search_text.value.startsWith('http://music.163.com')) {
+    const start = search_text.value.lastIndexOf('/')
+    const mid = search_text.value.indexOf('?')
+    const path = search_text.value.substring(start + 1, mid)
+    const id = query_finder('id', search_text.value.substring(mid + 1))
+    switch (path) {
+      case 'playlist':
+        router.push(`/playlist?id=${id}`)
+        return
+      case 'album':
+        router.push(`/album?id=${id}`)
+        return
+      case 'artist':
+        router.push(`/artist?id=${id}`)
+        return
     }
-  },
-  methods: {
-    search() {
-      if (this.search_text.startsWith('https://y.music.163.com') || this.search_text.startsWith('http://music.163.com')) {
-        let start = this.search_text.lastIndexOf('/');
-        let mid = this.search_text.indexOf('?');
-        let path = this.search_text.substring(start + 1, mid);
-        let id = query_finder('id', this.search_text.substring(mid + 1));
-        switch (path) {
-          case 'song':
-            this.listen(id);
-            return;
-          case 'playlist':
-            this.$router.push(`/playlist?id=${id}`);
-            return;
-          case 'album':
-            this.$router.push(`/album?id=${id}`);
-            return;
-          case 'artist':
-            this.$router.push(`/artist?id=${id}`);
-            return;
-        }
-        let s = this.search_text.split('/');
-        if (s[3] === 'album') {
-          this.$router.push(`/album?id=${s[4]}`);
-          return;
-        }
-      }
-      this.$router.push(`/search/all?key=${this.search_text}`);
-    },
-    onHandleSelect: function (index) {
-      this.current_tab = index;
-      this.$router.push(tabs[index - 1]);
-    },
+    const s = search_text.value.split('/')
+    if (s[3] === 'album') {
+      router.push(`/album?id=${s[4]}`)
+      return
+    }
   }
+  router.push(`/search/all?key=${search_text.value}`)
+}
+
+function onHandleSelect(index: number) {
+  current_tab.value = index
+  router.push(tabs[index - 1])
 }
 </script>
 
@@ -195,7 +187,6 @@ export default {
   background: none;
 }
 
-
 #icon {
   margin-left: 5px;
   width: 18px;
@@ -209,7 +200,6 @@ export default {
   align-items: center;
   -webkit-app-region: no-drag;
 }
-
 
 .button:hover {
   background-color: #e3e3e3;

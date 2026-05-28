@@ -2,7 +2,7 @@
     <div style="position: relative;background-color: var(--bg-color);" class="container">
         <div class="drawer-container rowbox">
             <div class="colbox" style="align-items: center;justify-content: center;">
-                <img :src="require('@/assets/icon.png')" style="height: 80px;" />
+                <img :src="iconImg" style="height: 80px;" />
                 <div style="font-size: 26px;margin-left: 20px;text-align: left;">
                     Lyric<br />
                     <div style="font-size: 39px;">Finder</div>
@@ -28,7 +28,7 @@
                         </el-input>
                     </div>
                     <div style="display: flex;justify-content: space-around;">
-                        <el-button v-on:click="confirm_cookie_login(callback)" type="primary"
+                        <el-button v-on:click="confirm_cookie_login()" type="primary"
                             style="margin-left: 20px;">登录</el-button>
                         <el-button v-on:click="Login_qr" type="danger" style="margin-left: 20px;">返回</el-button>
                     </div>
@@ -38,105 +38,82 @@
     </div>
 </template>
 
-<script>
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElNotification } from 'element-plus'
-export default {
-    name: 'UserLogin',
-    props: {},
-    data() {
-        return {
-            login_show: false,
-            scan_success: false,
-            out_of_date: false,
-            qrimg: "",
-            key: "",
-            qr_login: false,
-            cookie_login: false,
-            way_select: true,
-            input_cookie: "",
-            timer: undefined
-        };
-    },
-    methods: {
-        Login_cookie() {
-            this.cookie_login = true;
-            this.qr_login = false;
-            if (this.timer) {
-                clearInterval(this.timer);
-            }
-        },
-        confirm_cookie_login() {
-            this.$axios.post("func",{
-                target: "user_inf",
-                data: {
-                    cookie: this.input_cookie
-                }
-            }).then((res) => {
-                if (res.status == 200) {
-                    ElNotification({
-                        title: 'Success',
-                        message: '登陆成功',
-                        type: 'success',
-                    });
-                    localStorage.setItem('cookie', this.input_cookie);
-                    localStorage.setItem('profile', JSON.stringify(res.data));
-                    this.$router.push("/user");
-                }
-                else ElNotification({
-                    title: 'Error',
-                    message: '登陆失败',
-                    type: 'error',
-                });
-            });
-        },
-        Login_qr() {
-            this.cookie_login = false;
-            this.qr_login = true;
-            this.$axios.post("func", {
-                target: "generate_qr_code",
-                data: {}
-            }).then((response) => {
-                this.qrimg = response.data.qrimg;
-                this.key = response.data.key;
-                this.timer = setInterval(() => {
-                    this.$axios.post("func", {
-                        target: "qr_check",
-                        data: {
-                            key: this.key
-                        }
-                    }).then((res) => {
-                        let statusRes = res.data;
-                        if (statusRes.code === 800) {
-                            console.log("out_of_Date");
-                            this.out_of_date = true;
-                            clearInterval(this.timer);
-                        }
-                        if (statusRes.code === 802) {
-                            if (this.scan_success == false) {
-                                this.scan_success = true;
-                            }
-                        }
-                        if (statusRes.code === 803) {
-                            this.scan_success = false;
-                            this.out_of_date = false;
-                            clearInterval(this.timer);
-                            ElNotification({
-                                title: 'Success',
-                                message: '登陆成功',
-                                type: 'success',
-                            });
-                            localStorage.setItem('cookie', statusRes.cookie);
-                            this.$router.push("/user");
-                        }
-                    });
-                }, 1000);
-            });
-        },
-    },
-    created() {
-        setTimeout(() => this.Login_qr(), 0);
-    }
+import axios from '@/utils/request'
+import iconImg from '@/assets/icon.png'
+
+const router = useRouter()
+
+const scan_success = ref(false)
+const out_of_date = ref(false)
+const qrimg = ref('')
+const key = ref('')
+const qr_login = ref(false)
+const cookie_login = ref(false)
+const input_cookie = ref('')
+let timer: ReturnType<typeof setInterval> | undefined
+
+function Login_cookie() {
+    cookie_login.value = true
+    qr_login.value = false
+    if (timer) clearInterval(timer)
 }
+
+function confirm_cookie_login() {
+    axios.post('func', {
+        target: 'user_inf',
+        data: { cookie: input_cookie.value }
+    }).then((res) => {
+        if (res.status === 200) {
+            ElNotification({ title: 'Success', message: '登陆成功', type: 'success' })
+            localStorage.setItem('cookie', input_cookie.value)
+            localStorage.setItem('profile', JSON.stringify(res.data))
+            router.push('/user')
+        } else {
+            ElNotification({ title: 'Error', message: '登陆失败', type: 'error' })
+        }
+    })
+}
+
+function Login_qr() {
+    cookie_login.value = false
+    qr_login.value = true
+    axios.post('func', {
+        target: 'generate_qr_code',
+        data: {}
+    }).then((response) => {
+        qrimg.value = response.data.qrimg
+        key.value = response.data.key
+        timer = setInterval(() => {
+            axios.post('func', {
+                target: 'qr_check',
+                data: { key: key.value }
+            }).then((res) => {
+                const statusRes = res.data
+                if (statusRes.code === 800) {
+                    out_of_date.value = true
+                    if (timer) clearInterval(timer)
+                }
+                if (statusRes.code === 802) {
+                    if (!scan_success.value) scan_success.value = true
+                }
+                if (statusRes.code === 803) {
+                    scan_success.value = false
+                    out_of_date.value = false
+                    if (timer) clearInterval(timer)
+                    ElNotification({ title: 'Success', message: '登陆成功', type: 'success' })
+                    localStorage.setItem('cookie', statusRes.cookie)
+                    router.push('/user')
+                }
+            })
+        }, 1000)
+    })
+}
+
+setTimeout(() => Login_qr(), 0)
 </script>
 
 <style scoped>
@@ -145,7 +122,6 @@ export default {
         transform: translate(-100%, -50%);
         background: rgba(158, 158, 158, 0.1);
     }
-
     100% {
         transform: translate(-50%, -50%);
     }
@@ -158,7 +134,6 @@ export default {
     left: 50%;
     width: 700px;
     height: 500px;
-    /* backdrop-filter: blur(10px); */
     transition: all 0.5s ease-in-out;
     text-align: center;
     background-color: var(--bg-color);

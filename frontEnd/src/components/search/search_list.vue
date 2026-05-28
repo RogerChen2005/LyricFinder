@@ -19,61 +19,55 @@
     </el-container>
 </template>
 
-<script>
-export default {
-    name: 'SearchPage',
-    data() {
-        return {
-            count: 0,
-            lists: [],
-            search_loading:false,
-            key:"",
-            page:1,
-            loading:false
+<script setup lang="ts">
+import { ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import axios from '@/utils/request'
+
+const route = useRoute()
+const router = useRouter()
+
+const count = ref(0)
+const lists = ref<any[]>([])
+const key = ref('')
+const page = ref(1)
+const loading = ref(false)
+
+function search_query(index: number) {
+    loading.value = true
+    axios.post('func', {
+        target: 'search_list',
+        data: {
+            key: key.value,
+            offset: (index - 1) * 30
         }
-    },
-    methods: {
-        search_query(index) {
-            this.loading = true;
-            this.$axios.post("func", {
-                target: "search_list",
-                data: {
-                    key: this.key,
-                    offset: (index - 1) * 30,
-                }
-            }
-            ).then(
-                (response) => {
-                    this.lists = response.data.lists;
-                    this.count = response.data.count;
-                    this.loading = false;
-                }
-            );
-        },
-        handle_page_change(val) {
-            this.$router.push(`/search/list?key=${this.key}&page=${val}`);
-        },
-        display_list(item) {
-            this.$router.push(`/playlist?id=${item.id}`);
-        },
-    },
-    created(){
-        this.key = this.$route.query.key;
-        this.page = Number(this.$route.query.page)|| 1;
-        if(this.key) this.search_query(this.page);
-    },
-    watch:{
-    '$route.query':function(){
-        this.key = this.$route.query.key;
-        this.page = Number(this.$route.query.page)|| 1;
-        if(this.key) this.search_query(this.page);
-    }
-  }
+    }).then((response) => {
+        lists.value = response.data.lists
+        count.value = response.data.count
+        loading.value = false
+    })
 }
+
+function handle_page_change(val: number) {
+    router.push(`/search/list?key=${key.value}&page=${val}`)
+}
+
+function display_list(item: { id: number }) {
+    router.push(`/playlist?id=${item.id}`)
+}
+
+key.value = route.query.key as string
+page.value = Number(route.query.page) || 1
+if (key.value) search_query(page.value)
+
+watch(() => route.query, () => {
+    key.value = route.query.key as string
+    page.value = Number(route.query.page) || 1
+    if (key.value) search_query(page.value)
+})
 </script>
 
 <style scoped>
-
 .footer {
     display: flex;
     align-items: center;

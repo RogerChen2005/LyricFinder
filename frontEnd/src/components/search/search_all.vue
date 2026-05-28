@@ -47,67 +47,54 @@
     </div>
 </template>
 
-<script>
-import SongTable from '../display/SongTable.vue';
-export default {
-    name: 'SearchPage',
-    components:{
-        SongTable
-    },
-    data() {
-        return {
-            songs: [],
-            albums: [],
-            lists: [],
-            artists:[],
-            search_loading: false,
-            key: "",
-            type: 1,
-            moreText:{}
-        }
-    },
-    methods: {
-        search_query() {
-            this.search_loading = true;
-            this.$axios.post("func",{
-                target: "search_all",
-                data: {
-                    key: this.key,
-                }
-            }
-            ).then(
-                (response) => {
-                    this.songs = response.data.songs;
-                    this.albums = response.data.albums;
-                    this.lists = response.data.lists;
-                    this.artists = response.data.artists;
-                    this.moreText = response.data.moreText;
-                    this.search_loading = false;
-                }
-            );
+<script setup lang="ts">
+import { ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import axios from '@/utils/request'
+import SongTable from '../display/SongTable.vue'
 
-        },
-        display_album(item) {
-            this.$router.push(`/album?id=${item.id}`);
-        },
-        display_list(item) {
-            this.$router.push(`/playlist?id=${item.id}`);
-        },
-        display_artist(item) {
-            this.$router.push(`/artist?id=${item.id}`);
-        },
-    },
-    created() {
-        this.key = this.$route.query.key;
-        if (this.key) this.search_query();
-    },
-    watch: {
-        '$route.query': function () {
-            this.key = this.$route.query.key;
-            if (this.key) this.search_query();
-        }
-    }
+const route = useRoute()
+const router = useRouter()
+
+const songs = ref<any[]>([])
+const albums = ref<any[]>([])
+const lists = ref<any[]>([])
+const artists = ref<any[]>([])
+const key = ref('')
+const moreText = ref<any>({})
+
+function search_query() {
+    axios.post('func', {
+        target: 'search_all',
+        data: { key: key.value }
+    }).then((response) => {
+        songs.value = response.data.songs
+        albums.value = response.data.albums
+        lists.value = response.data.lists
+        artists.value = response.data.artists
+        moreText.value = response.data.moreText
+    })
 }
+
+function display_album(item: { id: number }) {
+    router.push(`/album?id=${item.id}`)
+}
+
+function display_list(item: { id: number }) {
+    router.push(`/playlist?id=${item.id}`)
+}
+
+function display_artist(item: { id: number }) {
+    router.push(`/artist?id=${item.id}`)
+}
+
+key.value = route.query.key as string
+if (key.value) search_query()
+
+watch(() => route.query, () => {
+    key.value = route.query.key as string
+    if (key.value) search_query()
+})
 </script>
 
 <style scoped>
@@ -116,7 +103,6 @@ export default {
         transform: translateY(300px);
         opacity: 0;
     }
-
     100% {
         transform: translateY(0%);
         opacity: 1;

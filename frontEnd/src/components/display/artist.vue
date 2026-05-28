@@ -41,73 +41,73 @@
     </el-container>
 </template>
 
-<script>
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useAppStore } from '@/stores'
+import axios from '@/utils/request'
 import SongTable from './SongTable.vue'
-export default {
-    name: "albumPage",
-    components:{
-        SongTable
-    },
-    data() {
-        return {
-            id: 0,
-            count: 0,
-            list: [],
-            list_name: "",
-            visible: false,
-            loading: true,
-            load: () => { },
-            detail: {},
-            albums: [],
-            activeName: "song"
-        }
-    },
-    methods: {
-        listen_all() {
-            this.$store.state.player.listen_all(this.list);
-        },
-        init() {
-            this.loading = true;
-            this.detail={};
-            this.$axios.post("func",{
-                target: "artist_info",
-                data: {
-                    id: this.id,
-                }
-            }).then((res) => {
-                this.detail = res.data.info;
-                this.list = res.data.songs;
-                this.handle_page_change(1);
-                this.loading = false;
-            })
-        },
-        handle_page_change(index) {
-            this.$axios.post("func", {
-                target: "get_artist_album",
-                data: {
-                    id: this.id,
-                    offset: (index - 1) * 30
-                }
-            }).then((res) => {
-                this.albums = res.data.albums;
-                this.count = res.data.count;
-            })
-        },
-        display_album(item) {
-            this.$router.push(`./album?id=${item.id}`);
-        },
-    },
-    watch: {
-        '$route': function () {
-            this.id = Number(this.$route.query.id);
-            if (this.id) this.init();
-        }
-    },
-    created() {
-        this.id = Number(this.$route.query.id);
-        if (this.id) this.init();
-    },
+
+const store = useAppStore()
+const route = useRoute()
+const router = useRouter()
+
+const id = ref(0)
+const count = ref(0)
+const list = ref<any[]>([])
+const loading = ref(true)
+const detail = ref<any>({})
+const albums = ref<any[]>([])
+const activeName = ref('song')
+const page = ref(1)
+
+function listen_all() {
+    ;(store as unknown as Record<string, Record<string, Function>>).player?.listen_all(list.value)
 }
+
+function init() {
+    loading.value = true
+    detail.value = {}
+    axios.post('func', {
+        target: 'artist_info',
+        data: { id: id.value }
+    }).then((res) => {
+        detail.value = res.data.info
+        list.value = res.data.songs
+        handle_page_change(1)
+        loading.value = false
+    })
+}
+
+function handle_page_change(index: number) {
+    axios.post('func', {
+        target: 'get_artist_album',
+        data: {
+            id: id.value,
+            offset: (index - 1) * 30
+        }
+    }).then((res) => {
+        albums.value = res.data.albums
+        count.value = res.data.count
+    })
+}
+
+function display_album(item: { id: number }) {
+    router.push(`./album?id=${item.id}`)
+}
+
+function onRouteChange() {
+    id.value = Number(route.query.id)
+    if (id.value) init()
+}
+
+route && onRouteChange()
+
+import { watch } from 'vue'
+watch(() => route.query, () => {
+    id.value = Number(route.query.id)
+    if (id.value) init()
+})
 </script>
 
 <style scoped>

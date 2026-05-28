@@ -22,52 +22,45 @@
     </el-container>
 </template>
 
-<script>
-import SongTable from './SongTable.vue';
-export default {
-    name: "albumPage",
-    components:{
-        SongTable
-    },
-    data() {
-        return {
-            id: 0,
-            count: 0,
-            list: [],
-            list_name: "",
-            visible: false,
-            loading: true,
-            load: () => { },
-            detail: {},
-            activeName: "song"
-        }
-    },
-    methods: {
-        listen_all() {
-            this.$store.state.player.listen_all(this.list);
-        },
-        init() {
-            this.loading = true;
-            this.$axios.post("func", {
-                target: "get_album",
-                data: {
-                    id: this.id,
-                }
-            }).then((res) => {
-                this.detail = res.data.detail;
-                this.list = res.data.songs;
-                this.loading = false;
-            })
-        },
-        display_artist(item) {
-            this.$router.push(`./artist?id=${item.id}`);
-        },
-    },
-    created() {
-        this.id = this.$route.query.id;
-        if (this.id) this.init();
-    }
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useAppStore } from '@/stores'
+import axios from '@/utils/request'
+import SongTable from './SongTable.vue'
+
+const store = useAppStore()
+const route = useRoute()
+const router = useRouter()
+
+const id = ref(0)
+const list = ref<any[]>([])
+const loading = ref(true)
+const detail = ref<any>({})
+const activeName = ref('song')
+
+function listen_all() {
+    ;(store as unknown as any).player && ((store as unknown as Record<string, Record<string, Function>>).player.listen_all(list.value))
 }
+
+function init() {
+    loading.value = true
+    axios.post('func', {
+        target: 'get_album',
+        data: { id: id.value }
+    }).then((res) => {
+        detail.value = res.data.detail
+        list.value = res.data.songs
+        loading.value = false
+    })
+}
+
+function display_artist(item: { id: number }) {
+    router.push(`./artist?id=${item.id}`)
+}
+
+id.value = Number(route.query.id)
+if (id.value) init()
 </script>
 
 <style scoped>

@@ -26,70 +26,62 @@
     </div>
 </template>
 
-<script>
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElNotification } from 'element-plus'
+import { useAppStore } from '@/stores'
 
-export default {
-    name: 'SongList',
-    data() {
-        return {
-            user_list: [],
-            display_list: [],
-            uid: 0,
-            total: 0,
-            offset: 0,
-            loading: false,
-            nickname: "",
-        }
-    },
-    methods: {
-        get_songlist() {
-            this.loading = true;
-            this.$store.state.data.update("private_list", (data) => {
-                this.refresh(data.list);
-                ElNotification({
-                    title: 'Success',
-                    message: '刷新成功',
-                    type: 'success',
-                });
-                this.handle_page_change(1);
-                this.loading = false;
-            }, (err) => {
-                console.log(err);
-                ElNotification({
-                    title: 'Error',
-                    message: '歌单获取失败',
-                    type: 'error',
-                });
-            });
-        },
-        open(item) {
-            this.$router.push(`/playlist?id=${item.id}`);
-        },
-        refresh(list) {
-            this.user_list = list;
-            this.total = list.length;
-        },
-        handle_page_change(val) {
-            this.display_list = this.user_list.slice((val - 1) * 30, val * 30);
-        },
-    },
-    created: function () {
-        this.loading = true;
-        this.$store.state.data.gets("private_list", (data) => {
-            this.refresh(data.list);
-            this.handle_page_change(1);
-            this.loading = false;
-        }, (err) => {
-            console.log(err);
-            ElNotification({
-                title: 'Error',
-                message: '歌单获取失败',
-                type: 'error',
-            });
-        })
-    }
+interface ListItem {
+    id: number
+    img_url: string
+    list_name: string
+    count: number
 }
+
+const store = useAppStore()
+const router = useRouter()
+
+const user_list = ref<ListItem[]>([])
+const display_list = ref<ListItem[]>([])
+const total = ref(0)
+const loading = ref(false)
+
+function get_songlist() {
+    loading.value = true
+    store.data!.update('private_list', (data) => {
+        refresh(data.list as ListItem[])
+        ElNotification({ title: 'Success', message: '刷新成功', type: 'success' })
+        handle_page_change(1)
+        loading.value = false
+    }, (err) => {
+        console.log(err)
+        ElNotification({ title: 'Error', message: '歌单获取失败', type: 'error' })
+    })
+}
+
+function open(item: ListItem) {
+    router.push(`/playlist?id=${item.id}`)
+}
+
+function refresh(list: ListItem[]) {
+    user_list.value = list
+    total.value = list.length
+}
+
+function handle_page_change(val: number) {
+    display_list.value = user_list.value.slice((val - 1) * 30, val * 30)
+}
+
+loading.value = true
+store.data!.gets('private_list', (data) => {
+    refresh(data.list as ListItem[])
+    handle_page_change(1)
+    loading.value = false
+}, (err) => {
+    console.log(err)
+    ElNotification({ title: 'Error', message: '歌单获取失败', type: 'error' })
+})
 </script>
 
 <style scoped>
@@ -106,4 +98,4 @@ export default {
     flex-direction: column;
     justify-content: center;
 }
-</style> 
+</style>

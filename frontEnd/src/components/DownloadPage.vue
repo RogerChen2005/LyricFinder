@@ -31,26 +31,19 @@
     </el-container>
 </template>
 
-<script>
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useAppStore } from '@/stores'
 
-export default {
-    name: 'DownloadPage',
-    data() {
-        return {
-            queue:[]
-        }
-    },
-    methods: {
-        remove_row(index) {
-            this.$store.state.queue.del(index);
-        },
-        download(){
-            this.$store.state.queue.download();
-        }
-    },
-    created(){
-        this.queue = this.$store.state.queue.inner_queue;
-    }
+const store = useAppStore()
+const queue = ref(store.queue!.inner_queue)
+
+function remove_row(index: number) {
+    store.queue!.del(index)
+}
+
+function download() {
+    store.queue!.download()
 }
 </script>
 

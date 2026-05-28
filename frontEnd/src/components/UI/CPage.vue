@@ -1,5 +1,5 @@
 <template>
-    <div v-if="visible" ref="bg" id="bg" :style="{backgroundImage:bg}">
+    <div v-if="visible" ref="bgEl" id="bg" :style="{backgroundImage: bg}">
         <div id="left">
             <slot name="left"></slot>
         </div>
@@ -10,29 +10,28 @@
     </div>
 </template>
 
-<script>
-export default {
-    name: "CPage",
-    props: {
-        "visible": {
-            type: Boolean,
-            default: false
-        },
-        "bg":{
-            type:String,
-            default:""
-        }
-    },
-    methods: {
-        handleClose() {
-            this.$refs.bg.style.animation = "cui-page-disappear .3s cubic-bezier(1, 0, 1, 1)";
-            this.$emit("close",null);
-            setTimeout(() => {
-                this.$emit("update:visible", false);
-            }, 300);
-        }
-    },
+<script setup lang="ts">
+import { ref } from 'vue'
+
+defineProps<{
+    visible?: boolean
+    bg?: string
+}>()
+
+const emit = defineEmits<{
+    close: [value: null]
+    'update:visible': [value: boolean]
+}>()
+
+const bgEl = ref<HTMLElement>()
+
+function handleClose() {
+    if (bgEl.value) bgEl.value.style.animation = 'cui-page-disappear .3s cubic-bezier(1, 0, 1, 1)'
+    emit('close', null)
+    setTimeout(() => emit('update:visible', false), 300)
 }
+
+defineExpose({ handleClose })
 </script>
 
 <style>
@@ -41,7 +40,6 @@ export default {
         opacity: 0%;
         transform: translate(-50%, -50%) scale(0.8);
     }
-
     100% {
         opacity: 100%;
         transform: translate(-50%, -50%) scale(1);
@@ -53,7 +51,6 @@ export default {
         opacity: 100%;
         transform: translate(-50%, -50%) scale(1);
     }
-
     100% {
         opacity: 0%;
         transform: translate(-50%, -50%) scale(0.8);
@@ -62,7 +59,6 @@ export default {
 </style>
 
 <style scoped>
-
 #bg {
     z-index: 2003;
     position: absolute;

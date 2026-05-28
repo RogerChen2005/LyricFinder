@@ -9,21 +9,22 @@
     </div>
 </template>
 
-<script>
-export default {
-    name:"CDiaLog",
-    props:{
-        "visible":{
-            type:Boolean,
-            default:false
-        }
-    },
-    methods:{
-        handleClose(){
-            this.$refs.bg.style.animation = "cui-dialog-disappear .3s ease-in";
-            setTimeout(()=>this.$emit("update:visible",false),300);
-        }
-    }
+<script setup lang="ts">
+import { ref } from 'vue'
+
+defineProps<{
+    visible?: boolean
+}>()
+
+const emit = defineEmits<{
+    'update:visible': [value: boolean]
+}>()
+
+const bg = ref<HTMLElement>()
+
+function handleClose() {
+    if (bg.value) bg.value.style.animation = 'cui-dialog-disappear .3s ease-in'
+    setTimeout(() => emit('update:visible', false), 300)
 }
 </script>
 

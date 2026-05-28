@@ -9,21 +9,22 @@
     </div>
 </template>
 
-<script>
-export default {
-    name:"CDrawer",
-    props:{
-        "visible":{
-            type:Boolean,
-            default:false
-        }
-    },
-    methods:{
-        handleClose(){
-            this.$refs.bg.style.animation = "cui-drawer-disappear .3s ease-in";
-            setTimeout(()=>this.$emit("update:visible",false),300);
-        }
-    }
+<script setup lang="ts">
+import { ref } from 'vue'
+
+defineProps<{
+    visible?: boolean
+}>()
+
+const emit = defineEmits<{
+    'update:visible': [value: boolean]
+}>()
+
+const bg = ref<HTMLElement>()
+
+function handleClose() {
+    if (bg.value) bg.value.style.animation = 'cui-drawer-disappear .3s ease-in'
+    setTimeout(() => emit('update:visible', false), 300)
 }
 </script>
 
@@ -72,7 +73,7 @@ export default {
         height: 100%;
         backdrop-filter: blur(10px);
         animation: cui-drawer-blur .5s ;
-    }  
+    }
     #bg{
         z-index: 2002;
         position: absolute;

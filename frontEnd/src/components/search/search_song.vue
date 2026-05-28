@@ -2,15 +2,9 @@
     <el-container id="main_content" class="container">
         <el-main>
             <div style="height:20px;margin-bottom: 10px;padding-left: 10px;display: flex;color: #606266;">
-                <el-col :span="8">
-                    标题
-                </el-col>
-                <el-col :span="6">
-                    歌手
-                </el-col>
-                <el-col :span="6">
-                    专辑
-                </el-col>
+                <el-col :span="8">标题</el-col>
+                <el-col :span="6">歌手</el-col>
+                <el-col :span="6">专辑</el-col>
                 <div style="width: 230px;"></div>
             </div><br />
             <div v-loading="search_loading">
@@ -25,7 +19,7 @@
                         </div>
                     </el-col>
                     <el-col class="hide_text" :span="4">
-                        <el-link style="font-size: 14px;"  @click="display_album(i.album)">{{ i.album.name }}</el-link>
+                        <el-link style="font-size: 14px;" @click="display_album(i.album)">{{ i.album.name }}</el-link>
                     </el-col>
                     <el-button v-on:click="listen_temporary(i)" style="margin-left: 20px;">播放</el-button>
                     <el-button v-on:click="add(i)" type="primary" style="margin-left: 20px;">下载</el-button>
@@ -40,85 +34,77 @@
     </el-container>
 </template>
 
-<script>
+<script setup lang="ts">
+import { ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useAppStore } from '@/stores'
+import axios from '@/utils/request'
 
-export default {
-    name: 'SearchPage',
-    data() {
-        return {
-            count: 0,
-            searchlist: [],
-            search: "",
-            search_loading: false,
-            key: "",
-            page: 1,
+const route = useRoute()
+const router = useRouter()
+const store = useAppStore()
+
+const count = ref(0)
+const searchlist = ref<any[]>([])
+const search_loading = ref(false)
+const key = ref('')
+const page = ref(1)
+
+async function add(i: any) {
+    const result = await axios.post('func', {
+        target: 'get_song_detail',
+        data: { id: '' + i.id }
+    })
+    ;(i.album as any).cover = result.data.album.cover
+    store.queue?.add(i)
+}
+
+function search_query(index: number) {
+    search_loading.value = true
+    axios.post('func', {
+        target: 'search_song',
+        data: {
+            key: key.value,
+            offset: (index - 1) * 30,
             type: 1
         }
-    },
-    methods: {
-        async add(i) {
-            let result = await this.$axios.post("func", {
-                target: "get_song_detail",
-                data: {
-                    id: "" + i.id,
-                }
-            })
-            i.album.cover = result.data.album.cover;
-            this.$store.state.queue.add(i);
-        },
-        search_query(index) {
-            this.search_loading = true;
-            this.$axios.post("func", {
-                target: "search_song",
-                data: {
-                    key: this.key,
-                    offset: (index - 1) * 30,
-                    type: this.type
-                }
-            }
-            ).then(
-                (response) => {
-                    this.searchlist = response.data.songs;
-                    this.count = response.data.count;
-                    this.search_loading = false;
-                }
-            );
-
-        },
-        async listen_temporary(i) {
-            let data = i;
-            let result = await this.$axios.post("func", {
-                target: "get_song_detail",
-                data: {
-                    id: "" + i.id,
-                }
-            })
-            data.album.cover = result.data.album.cover
-            this.$store.state.trylisten(data);
-        },
-        handle_page_change(val) {
-            this.$router.push(`/search/song?key=${this.key}&page=${val}`);
-        },
-        display_album(item) {
-            this.$router.push(`/album?id=${item.id}`);
-        },
-        display_artist(item) {
-            this.$router.push(`/artist?id=${item.id}`);
-        },
-    },
-    created() {
-        this.key = this.$route.query.key;
-        this.page = this.$route.query.page || 1;
-        if (this.key) this.search_query(this.page);
-    },
-    watch: {
-        '$route.query': function () {
-            this.key = this.$route.query.key;
-            this.page = this.$route.query.page || 1;
-            if (this.key) this.search_query(this.page);
-        }
-    }
+    }).then((response) => {
+        searchlist.value = response.data.songs
+        count.value = response.data.count
+        search_loading.value = false
+    })
 }
+
+async function listen_temporary(i: any) {
+    const result = await axios.post('func', {
+        target: 'get_song_detail',
+        data: { id: '' + i.id }
+    })
+    ;(i.album as any).cover = result.data.album.cover
+    ;(store as unknown as Record<string, Function>).trylisten?.(i)
+}
+
+function handle_page_change(val: number) {
+    router.push(`/search/song?key=${key.value}&page=${val}`)
+}
+
+function display_album(item: { id: number }) {
+    router.push(`/album?id=${item.id}`)
+}
+
+function display_artist(item: { id: number }) {
+    router.push(`/artist?id=${item.id}`)
+}
+
+key.value = route.query.key as string
+page.value = Number(route.query.page) || 1
+if (key.value) search_query(page.value)
+
+watch(() => route.query, () => {
+    key.value = route.query.key as string
+    page.value = Number(route.query.page) || 1
+    if (key.value) search_query(page.value)
+})
 </script>
 
 <style scoped>

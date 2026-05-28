@@ -8,45 +8,34 @@
     </div>
 </template>
 
-<script>
-export default {
-    name: "CuiRmenu",
-    props: {
-        "visible": {
-            type: Boolean,
-            default: false
-        }
-    },
-    methods: {
-        handleClose() {
-            this.$refs.bg.style.animation = "cui-rmenu-disappear .15s ease-in";
-            setTimeout(() => this.$emit("update:visible", false), 150);
-        },
-        handleOpen(x, y) {
-            setTimeout(()=>{
-                this.$refs.bg.style.top = `${y}px`;
-                this.$refs.bg.style.left = `${x}px`;
-            },0)
-        }
-    },
-}
-// import { ref,defineModel,defineExpose} from 'vue';
-// const dialogVisible= defineModel("visible");
-// const bg = ref(null);
-// function handleClose() {
-//     bg.value.style.animation = "cui-rmenu-disappear .3s ease-in";
-//     setTimeout(() => dialogVisible.value=false, 300);
-// }
-// function handleOpen(x, y){
-//     console.log(x,y);
-//     bg.value.style.top = `${y}px`;
-//     bg.value.style.left = `${x}px`;
-// }
-// console.log(dialogVisible);
+<script setup lang="ts">
+import { ref } from 'vue'
 
-// defineExpose({
-//     handleOpen
-// })
+defineProps<{
+    visible?: boolean
+}>()
+
+const emit = defineEmits<{
+    'update:visible': [value: boolean]
+}>()
+
+const bg = ref<HTMLElement>()
+
+function handleClose() {
+    if (bg.value) bg.value.style.animation = 'cui-rmenu-disappear .15s ease-in'
+    setTimeout(() => emit('update:visible', false), 150)
+}
+
+function handleOpen(x: number, y: number) {
+    setTimeout(() => {
+        if (bg.value) {
+            bg.value.style.top = `${y}px`
+            bg.value.style.left = `${x}px`
+        }
+    }, 0)
+}
+
+defineExpose({ handleOpen })
 </script>
 
 <style>
@@ -55,7 +44,6 @@ export default {
         opacity: 0%;
         transform: translate(-25%,-25%) scale(0.5);
     }
-
     100% {
         opacity: 100%;
         transform: scale(1);
@@ -67,7 +55,6 @@ export default {
         opacity: 100%;
         transform: scale(1);
     }
-
     100% {
         opacity: 0%;
         transform: translate(-25%,-25%) scale(0.5);

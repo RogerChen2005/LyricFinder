@@ -36,66 +36,77 @@
     </Teleport>
 </template>
 
-<script>
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAppStore } from '@/stores'
+import axios from '@/utils/request'
 import CRMenu from '../UI/CRMenu.vue'
-import CRMenuCell from "../UI/CRMenuCell.vue"
+import CRMenuCell from '../UI/CRMenuCell.vue'
 
-export default {
-    name: "SongMenu",
-    props: {
-        list: Array
-    },
-    components: {
-        CRMenu, CRMenuCell
-    },
-    data() {
-        return {
-            display: false,
-            options: [{
-                name: "播放",
-                icon: "play",
-                handler: this.listen
-            }, {
-                name: "下一首播放",
-                icon: "list-plus",
-                handler: (data) => this.$store.state.player.next(data),
-            }, {
-                name: "下载",
-                icon: "download",
-                handler: (data) => this.$store.state.queue.add(data),
-            }],
-            data: {}
-        }
-    },
-    methods: {
-        open(x, y, data) {
-            this.display = true;
-            this.data = data;
-            this.$refs.menu.handleOpen(x, y);
-        },
-        async listen(data) {
-            let result = await this.$axios.post("func",{
-                target: "get_song_detail",
-                data: {
-                    id: ""+data.id,
-                }
-            })
-            data.album.cover = result.data.album.cover
-            this.$store.state.player.listen(data)
-        },
-        display_album(item) {
-            this.$router.push(`./album?id=${item.id}`);
-        },
-        display_artist(item) {
-            this.$router.push(`./artist?id=${item.id}`);
-        },
-        handleRightClick(row, col, e) {
-            e.preventDefault();
-            let mouseX = e.clientX;
-            let mouseY = e.clientY;
-            this.open(mouseX, mouseY, row);
-        }
-    }
+interface Artist {
+    id: number
+    name: string
+}
+
+interface Album {
+    id: number
+    name: string
+    cover: string
+}
+
+interface SongItem {
+    id: number
+    title: string
+    artists: Artist[]
+    album: Album
+}
+
+const props = withDefaults(defineProps<{
+    list?: SongItem[]
+}>(), {
+    list: () => []
+})
+
+const store = useAppStore()
+const router = useRouter()
+
+const display = ref(false)
+const menu = ref<InstanceType<typeof CRMenu>>()
+const data = ref<SongItem>({} as SongItem)
+
+const options = [
+    { name: '播放', icon: 'play', handler: (d: SongItem) => listen(d) },
+    { name: '下一首播放', icon: 'list-plus', handler: (d: SongItem) => (store as unknown as Record<string, Record<string, Function>>).player?.next(d) },
+    { name: '下载', icon: 'download', handler: (d: SongItem) => store.queue?.add(d) }
+]
+
+function open(x: number, y: number, item: SongItem) {
+    display.value = true
+    data.value = item
+    menu.value?.handleOpen(x, y)
+}
+
+async function listen(item: SongItem) {
+    const result = await axios.post('func', {
+        target: 'get_song_detail',
+        data: { id: '' + item.id }
+    })
+    item.album.cover = result.data.album.cover
+    ;(store as unknown as Record<string, Record<string, Function>>).player?.listen(item)
+}
+
+function display_album(item: { id: number }) {
+    router.push(`./album?id=${item.id}`)
+}
+
+function display_artist(item: { id: number }) {
+    router.push(`./artist?id=${item.id}`)
+}
+
+function handleRightClick(row: SongItem, _col: unknown, e: MouseEvent) {
+    e.preventDefault()
+    open(e.clientX, e.clientY, row)
 }
 </script>
 
