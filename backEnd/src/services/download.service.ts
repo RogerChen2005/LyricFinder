@@ -45,7 +45,7 @@ export async function lyric_download(
 ): Promise<string> {
   const options = data.options
   const query = data.query
-  const result = await lyric({ id: query.id })
+  const result = await lyric({ id: query.id, randomCNIP: true })
   const body = result.body as any
   const saveName = createFileName(query, options, 'lrc')
   const savePath = path.join(TEMP_PATH, saveName)
@@ -98,6 +98,7 @@ export async function music_download(
     id: query.id,
     cookie: loadCookie(),
     level: options.level,
+    randomCNIP: true,
   })
   const body = result.body as any
   const url = body.data[0].url

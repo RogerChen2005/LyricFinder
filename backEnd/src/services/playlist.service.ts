@@ -5,7 +5,7 @@ import { artists_conv } from '../lib/artists'
 export async function get_playlist(reply: FastifyReply, query: Record<string, any>) {
   const result: any[] = []
   for (let offset = 0; ; offset += 30) {
-    const value = await user_playlist({ uid: query.uid, limit: 30, offset })
+    const value = await user_playlist({ uid: query.uid, limit: 30, offset, randomCNIP: true })
     const body = value.body as any
     for (const i of body.playlist) {
       result.push({
@@ -27,6 +27,7 @@ export async function get_list_song(reply: FastifyReply, query: Record<string, a
     limit: 30,
     offset: query.offset,
     cookie: query.cookie,
+    randomCNIP: true,
   })
   const body = result.body as any
   const data: any[] = []
@@ -44,7 +45,7 @@ export async function get_list_song(reply: FastifyReply, query: Record<string, a
 
 export async function songlist_detail(reply: FastifyReply, query: Record<string, any>) {
   try {
-    const result = await playlist_detail({ id: query.id, cookie: query.cookie })
+    const result = await playlist_detail({ id: query.id, cookie: query.cookie, randomCNIP: true })
     const songlist = (result.body as any).playlist
     reply.status(200)
     return JSON.stringify({

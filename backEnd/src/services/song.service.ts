@@ -4,7 +4,7 @@ import { artists_conv } from '../lib/artists'
 import { loadCookie } from '../config'
 
 export async function get_song_detail(reply: FastifyReply, query: Record<string, any>) {
-  const result = await song_detail({ ids: query.id })
+  const result = await song_detail({ ids: query.id, randomCNIP: true })
   const data = (result.body as any).songs[0]
   reply.status(200)
   return JSON.stringify({
@@ -16,13 +16,13 @@ export async function get_song_detail(reply: FastifyReply, query: Record<string,
 }
 
 export async function get_song_url(reply: FastifyReply, query: Record<string, any>) {
-  const result = await song_url_v1({ id: query.id, level: query.level, cookie: loadCookie() })
+  const result = await song_url_v1({ id: query.id, level: query.level, cookie: loadCookie(), randomCNIP: true })
   reply.status(200)
   return JSON.stringify((result.body as any).data[0])
 }
 
 export async function get_lyric(reply: FastifyReply, query: Record<string, any>) {
-  const result = await lyric({ id: query.id })
+  const result = await lyric({ id: query.id, randomCNIP: true })
   const body = result.body as any
   if (body) {
     const data: Record<string, string> = {}
