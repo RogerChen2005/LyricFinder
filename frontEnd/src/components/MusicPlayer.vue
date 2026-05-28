@@ -52,10 +52,9 @@
                 </div>
             </div>
             <div class="full-slider colbox">
-                <div>{{ toTime(current) }}</div>
-                <input id="full-input-range" type="range" :value="current" :max="data.duration"
-                    @input="(e) => changeLong(Number((e.target as HTMLInputElement).value))" />
-                <div>{{ toTime(data.duration) }}</div>
+                <div style="margin-right: 8px;">{{ toTime(current) }}</div>
+                <CProgressBar v-model="current" :max="data.duration" @update:model-value="changeLong" style="flex: 1; margin: 0 5px;" />
+                <div style="margin-left: 8px;">{{ toTime(data.duration) }}</div>
             </div>
             <div class="full-controllers">
                 <box-icon name='skip-previous' @click="prev" color='var(--text-color-light)' size='80px'></box-icon>
@@ -85,8 +84,8 @@
     </CPage>
     <div ref="playerEl" id="player">
         <div id="slider">
-            <el-slider size="small" v-model="current" :max="data.duration" :show-tooltip="false"
-                @input="changeLong"></el-slider>
+            <CProgressBar v-model="current" :max="data.duration" @update:model-value="changeLong"
+                style="--bar-played: rgba(0,0,0,0.35); --bar-track: rgba(0,0,0,0.1); --bar-thumb: #666;" />
         </div>
         <audio :src="data.music_url" @canplay="showLong" ref="audioEl" autoplay @timeupdate="getCurr"
             @pause="is_stop = true" @play="is_stop = false" @ended="ended"></audio>
@@ -128,7 +127,7 @@
         </div>
     </div>
     <div ref="showButtonEl" id="show_button" @click="show">
-        <box-icon color="#EEEEEE" type='solid' name='music'></box-icon>
+        <box-icon color="#fff" type='solid' name='music' size="sm"></box-icon>
     </div>
 </template>
 
@@ -140,6 +139,7 @@ import { useAppStore } from '@/stores'
 import axios from '@/utils/request'
 import CDrawer from './UI/CDrawer.vue'
 import CPage from './UI/CPage.vue'
+import CProgressBar from './UI/CProgressBar.vue'
 
 interface LyricLine {
     t: number
@@ -490,34 +490,6 @@ function download() {
 </script>
 
 <style scoped>
-#full-input-range {
-    margin: 5px;
-    width: calc(100% - 10px);
-    opacity: 0.3;
-    transition: .3s;
-}
-
-#full-input-range::-webkit-slider-runnable-track {
-    -webkit-appearance: none;
-    appearance: none;
-    outline: none;
-    border: solid 1px var(--bd-color);
-    border-radius: 3px;
-    background-color: transparent;
-    opacity: 0.8;
-}
-
-#full-input-range:hover {
-    filter: brightness(110%);
-}
-
-#full-input-range::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    outline: none;
-    opacity: 0;
-}
-
 .full-controllers {
     display: flex;
     justify-content: space-between;
@@ -550,6 +522,10 @@ function download() {
 }
 
 .full-slider {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
     color: #d0d0d0;
     transform: translate(0, 10px);
 }
@@ -704,8 +680,10 @@ html.dark #player {
 #slider {
     position: absolute;
     top: 0;
-    width: 100%;
-    transform: translateY(-9px);
+    left: 0;
+    right: 0;
+    padding: 0 8px;
+    transform: translateY(-6px);
 }
 
 .drawer-body {
@@ -716,18 +694,38 @@ html.dark #player {
 }
 
 #show_button {
-    width: 40px;
-    height: 40px;
+    width: 48px;
+    height: 48px;
     position: absolute;
-    background-color: #409EFF;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
     bottom: 15%;
     right: 3%;
     display: flex;
-    border-radius: 100%;
+    border-radius: 50%;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: 1s;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
     z-index: 2001;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+}
+
+#show_button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.55);
+}
+
+#show_button:active {
+    transform: scale(0.95);
+}
+
+box-icon {
+    border-radius: 50%;
+    transition: box-shadow 0.2s ease;
+}
+
+box-icon:hover {
+    box-shadow: inset 0 0 0 999px rgba(128, 128, 128, 0.12);
+    cursor: pointer;
 }
 </style>

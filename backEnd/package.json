@@ -1,6 +1,7 @@
 {
   "name": "lyricfinderbackend",
   "version": "0.1.0",
+  "cookiePath": "./cookies/cookie.txt",
   "scripts": {
     "dev": "tsx src/index.ts",
     "build": "tsc",

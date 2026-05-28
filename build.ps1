@@ -3,12 +3,12 @@ $ErrorActionPreference = "Stop"
 
 Write-Host "Building frontend..."
 Push-Location frontEnd
-npm run build
+cmd /c npm run build
 Pop-Location
 
 Write-Host "Building backend..."
 Push-Location backEnd
-npx tsc
+cmd /c npx tsc
 Pop-Location
 
 Write-Host "Assembling build\..."
@@ -21,4 +21,4 @@ Copy-Item backEnd\package.json build\
 Copy-Item backEnd\pnpm-lock.yaml build\
 if (Test-Path backEnd\cookies\*) { Copy-Item backEnd\cookies\* build\cookies\ }
 
-Write-Host "Done. Run with: cd build; pnpm install --prod; node src\index.js"
+Write-Host "Done. Run with: cd build; pnpm install --prod; `$env:NODE_ENV='production'; node src\index.js"
