@@ -1,0 +1,75 @@
+name: Build & Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Build frontend
+        working-directory: frontEnd
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run build
+
+      - name: Build backend
+        working-directory: backEnd
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run build
+
+      - name: Assemble artifact
+        run: |
+          mkdir -p dist/static dist/cookies dist/temp
+          cp -r backEnd/dist/* dist/
+          cp -r frontEnd/static/* dist/static/
+          cp backEnd/package.json dist/
+          cp backEnd/pnpm-lock.yaml dist/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lyricfinder
+          path: dist/
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: lyricfinder
+          path: dist/
+
+      - name: Deploy via rsync
+        uses: burnett01/rsync-deployments@7.0.1
+        with:
+          switches: -avzr --delete
+          path: dist/
+          remote_path: ${{ secrets.DEPLOY_PATH }}/
+          remote_host: ${{ secrets.SSH_HOST }}
+          remote_user: ${{ secrets.SSH_USER }}
+          remote_port: ${{ secrets.SSH_PORT || 22 }}
+          remote_key: ${{ secrets.SSH_KEY }}
+
+      - name: Restart app on server
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            cd ${{ secrets.DEPLOY_PATH }}
+            pnpm install --prod --frozen-lockfile
