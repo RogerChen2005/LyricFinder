@@ -2,7 +2,7 @@ import { FastifyReply } from 'fastify'
 import fs from 'fs'
 import path from 'path'
 import axios from 'axios'
-import { lyric, song_url_v1 } from '../api'
+import { lyric, song_url_v1 } from '@neteasecloudmusicapienhanced/api'
 import { loadCookie, TEMP_PATH, ensureTempPath } from '../config'
 
 const taglib = require('node-taglib-sharp')
@@ -46,14 +46,15 @@ export async function lyric_download(
   const options = data.options
   const query = data.query
   const result = await lyric({ id: query.id })
+  const body = result.body as any
   const saveName = createFileName(query, options, 'lrc')
   const savePath = path.join(TEMP_PATH, saveName)
 
   try {
-    if (options.tlyric && result.body.tlyric && result.body.tlyric.lyric) {
+    if (options.tlyric && body.tlyric && body.tlyric.lyric) {
       const res: string[] = []
-      let lyricLines = result.body.lrc.lyric.split('\n')
-      let tlyricLines = result.body.tlyric.lyric.split('\n')
+      let lyricLines = body.lrc.lyric.split('\n')
+      let tlyricLines = body.tlyric.lyric.split('\n')
       if (!Number(tlyricLines[0][1])) {
         tlyricLines = tlyricLines.slice(1)
       }
@@ -76,7 +77,7 @@ export async function lyric_download(
       }
       fs.writeFileSync(savePath, res.join('\n'))
     } else {
-      fs.writeFileSync(savePath, result.body.lrc.lyric)
+      fs.writeFileSync(savePath, body.lrc.lyric)
     }
     reply.status(200)
     return JSON.stringify({ filename: saveName })
@@ -98,8 +99,9 @@ export async function music_download(
     cookie: loadCookie(),
     level: options.level,
   })
-  const url = result.body.data[0].url
-  const type = result.body.data[0].type
+  const body = result.body as any
+  const url = body.data[0].url
+  const type = body.data[0].type
   const saveName = createFileName(query, options, type)
   const savePath = path.join(TEMP_PATH, saveName)
   const stream = fs.createWriteStream(savePath)

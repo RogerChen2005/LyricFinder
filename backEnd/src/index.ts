@@ -12,18 +12,6 @@ import downloadRoutes from './routes/download.routes'
 async function start() {
   const app = Fastify({ logger: true })
 
-  app.addContentTypeParser(
-    'application/json',
-    { parseAs: 'string' },
-    (_req, body, _done) => {
-      try {
-        return JSON.parse(body as string)
-      } catch {
-        return body
-      }
-    },
-  )
-
   await app.register(searchRoutes)
   await app.register(songRoutes)
   await app.register(playlistRoutes)

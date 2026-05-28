@@ -1,13 +1,14 @@
 import { FastifyReply } from 'fastify'
-import { artists, artist_album } from '../api'
+import { artists, artist_album } from '@neteasecloudmusicapienhanced/api'
 import { artists_conv } from '../lib/artists'
 
 export async function artist_info(reply: FastifyReply, query: Record<string, any>) {
   try {
     const result = await artists({ id: query.id })
-    const artist = result.body.artist
+    const body = result.body as any
+    const artist = body.artist
     const data: any[] = []
-    for (const i of result.body.hotSongs) {
+    for (const i of body.hotSongs) {
       data.push({
         id: i.id,
         title: i.name,
@@ -34,8 +35,9 @@ export async function artist_info(reply: FastifyReply, query: Record<string, any
 
 export async function get_artist_album(reply: FastifyReply, query: Record<string, any>) {
   const result = await artist_album({ id: query.id, offset: query.offset, limit: 30 })
+  const body = result.body as any
   const data: any[] = []
-  for (const i of result.body.hotAlbums) {
+  for (const i of body.hotAlbums) {
     data.push({
       id: i.id,
       name: i.name,
@@ -45,5 +47,5 @@ export async function get_artist_album(reply: FastifyReply, query: Record<string
     })
   }
   reply.status(200)
-  return JSON.stringify({ albums: data, count: result.body.artist.albumSize })
+  return JSON.stringify({ albums: data, count: body.artist.albumSize })
 }

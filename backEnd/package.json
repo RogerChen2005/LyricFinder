@@ -7,13 +7,12 @@
     "start": "node dist/src/index.js"
   },
   "dependencies": {
+    "@neteasecloudmusicapienhanced/api": "^4.33.0",
     "axios": "^1.4.0",
     "fastify": "^4.29.1",
     "node-taglib-sharp": "^5.1.0",
     "pac-proxy-agent": "^6.0.3",
-    "qrcode": "^1.5.3",
-    "tunnel": "^0.0.6",
-    "xml2js": "^0.6.2"
+    "tunnel": "^0.0.6"
   },
   "devDependencies": {
     "@types/node": "^25.9.1",

@@ -1,12 +1,13 @@
 import { FastifyReply } from 'fastify'
-import { user_playlist, playlist_track_all, playlist_detail } from '../api'
+import { user_playlist, playlist_track_all, playlist_detail } from '@neteasecloudmusicapienhanced/api'
 import { artists_conv } from '../lib/artists'
 
 export async function get_playlist(reply: FastifyReply, query: Record<string, any>) {
   const result: any[] = []
   for (let offset = 0; ; offset += 30) {
     const value = await user_playlist({ uid: query.uid, limit: 30, offset })
-    for (const i of value.body.playlist) {
+    const body = value.body as any
+    for (const i of body.playlist) {
       result.push({
         list_name: i.name,
         id: i.id,
@@ -14,7 +15,7 @@ export async function get_playlist(reply: FastifyReply, query: Record<string, an
         count: i.trackCount,
       })
     }
-    if (value.body.more === false) break
+    if (body.more === false) break
   }
   reply.status(200)
   return JSON.stringify({ list: result })
@@ -27,8 +28,9 @@ export async function get_list_song(reply: FastifyReply, query: Record<string, a
     offset: query.offset,
     cookie: query.cookie,
   })
+  const body = result.body as any
   const data: any[] = []
-  for (const i of result.body.songs) {
+  for (const i of body.songs) {
     data.push({
       title: i.name,
       id: i.id,
@@ -43,7 +45,7 @@ export async function get_list_song(reply: FastifyReply, query: Record<string, a
 export async function songlist_detail(reply: FastifyReply, query: Record<string, any>) {
   try {
     const result = await playlist_detail({ id: query.id, cookie: query.cookie })
-    const songlist = result.body.playlist
+    const songlist = (result.body as any).playlist
     reply.status(200)
     return JSON.stringify({
       name: songlist.name,

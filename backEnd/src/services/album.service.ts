@@ -1,13 +1,14 @@
 import { FastifyReply } from 'fastify'
-import { album } from '../api'
+import { album } from '@neteasecloudmusicapienhanced/api'
 import { artists_conv } from '../lib/artists'
 
 export async function get_album(reply: FastifyReply, query: Record<string, any>) {
   try {
     const result = await album({ id: query.id })
-    const songlist = result.body.album
+    const body = result.body as any
+    const songlist = body.album
     const data: any[] = []
-    for (const i of result.body.songs) {
+    for (const i of body.songs) {
       data.push({
         title: i.name,
         id: i.id,
