@@ -1,1 +1,0 @@
-npm install ws express node-taglib-sharp pac-proxy-agent axios tunnel qrcode request

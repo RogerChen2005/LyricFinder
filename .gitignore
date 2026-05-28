@@ -7,6 +7,9 @@
 **/cert
 **/test
 backend/dist/
+backEnd/dist/
+build/
 bundled/
 dest/
 docs/
+.claude
