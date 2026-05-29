@@ -16,7 +16,7 @@ export async function get_song_detail(reply: FastifyReply, query: Record<string,
 }
 
 export async function get_song_url(reply: FastifyReply, query: Record<string, any>) {
-  const result = await song_url_v1({ id: query.id, level: query.level, cookie: loadCookie(), randomCNIP: true })
+  const result = await song_url_v1({ id: query.id, level: query.level, cookie: loadCookie(), realIP: "116.25.146.177" })
   reply.status(200)
   return JSON.stringify((result.body as any).data[0])
 }
