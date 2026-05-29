@@ -53,10 +53,19 @@ jobs:
           name: lyricfinder
           path: dist/
 
+      - name: Stop Remote Service
+        uses: appleboy/ssh-action@v1.2.5
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: sudo systemctl stop lyricfinder || true
+
       - name: Deploy via rsync
         uses: burnett01/rsync-deployments@7.0.1
         with:
-          switches: -avzr --delete
+          switches: -avzr --delete --exclude=node_modules
           path: dist/
           remote_path: ${{ secrets.DEPLOY_PATH }}/
           remote_host: ${{ secrets.SSH_HOST }}
@@ -78,5 +87,5 @@ jobs:
             
             nvm install 24
             nvm use 24
-            npm install --omit=dev
+            npm install --omit=dev --prefer-offline
             sudo systemctl restart lyricfinder
