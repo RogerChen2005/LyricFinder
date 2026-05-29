@@ -4,7 +4,7 @@ import { artists_conv } from '../lib/artists'
 
 export async function get_album(reply: FastifyReply, query: Record<string, any>) {
   try {
-    const result = await album({ id: query.id, randomCNIP: true })
+    const result = await album({ id: query.id, realIP: "116.25.146.177" })
     const body = result.body as any
     const songlist = body.album
     const data: any[] = []

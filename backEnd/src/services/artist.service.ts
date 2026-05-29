@@ -4,7 +4,7 @@ import { artists_conv } from '../lib/artists'
 
 export async function artist_info(reply: FastifyReply, query: Record<string, any>) {
   try {
-    const result = await artists({ id: query.id, randomCNIP: true })
+    const result = await artists({ id: query.id, realIP: "116.25.146.177" })
     const body = result.body as any
     const artist = body.artist
     const data: any[] = []
@@ -34,7 +34,7 @@ export async function artist_info(reply: FastifyReply, query: Record<string, any
 }
 
 export async function get_artist_album(reply: FastifyReply, query: Record<string, any>) {
-  const result = await artist_album({ id: query.id, offset: query.offset, limit: 30, randomCNIP: true })
+  const result = await artist_album({ id: query.id, offset: query.offset, limit: 30, realIP: "116.25.146.177" })
   const body = result.body as any
   const data: any[] = []
   for (const i of body.hotAlbums) {

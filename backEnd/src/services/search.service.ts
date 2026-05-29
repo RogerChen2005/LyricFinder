@@ -4,7 +4,7 @@ import { artists_conv } from '../lib/artists'
 import type { SearchAlbum, SearchPlaylist, SearchArtist } from '../types'
 
 export async function search_all(reply: FastifyReply, query: Record<string, any>) {
-  const result = await search({ keywords: query.key, type: 1018, randomCNIP: true })
+  const result = await search({ keywords: query.key, type: 1018, realIP: "116.25.146.177" })
   const body = result.body as any
   const songs: any[] = []
   const albums: SearchAlbum[] = []
@@ -63,7 +63,7 @@ export async function search_all(reply: FastifyReply, query: Record<string, any>
 }
 
 export async function search_list(reply: FastifyReply, query: Record<string, any>) {
-  const result = await search({ keywords: query.key, offset: query.offset, limit: 30, type: 1000, randomCNIP: true })
+  const result = await search({ keywords: query.key, offset: query.offset, limit: 30, type: 1000, realIP: "116.25.146.177" })
   const body = result.body as any
   const data: SearchPlaylist[] = []
   for (const i of body.result.playlists) {
@@ -80,7 +80,7 @@ export async function search_list(reply: FastifyReply, query: Record<string, any
 }
 
 export async function search_song(reply: FastifyReply, query: Record<string, any>) {
-  const result = await search({ keywords: query.key, offset: query.offset, limit: 30, type: 1, randomCNIP: true })
+  const result = await search({ keywords: query.key, offset: query.offset, limit: 30, type: 1, realIP: "116.25.146.177" })
   const body = result.body as any
   const data: any[] = []
   for (const i of body.result.songs) {
@@ -96,7 +96,7 @@ export async function search_song(reply: FastifyReply, query: Record<string, any
 }
 
 export async function search_album(reply: FastifyReply, query: Record<string, any>) {
-  const result = await search({ keywords: query.key, offset: query.offset, limit: 30, type: 10, randomCNIP: true })
+  const result = await search({ keywords: query.key, offset: query.offset, limit: 30, type: 10, realIP: "116.25.146.177" })
   const body = result.body as any
   const data: SearchAlbum[] = []
   for (const i of body.result.albums) {
@@ -113,7 +113,7 @@ export async function search_album(reply: FastifyReply, query: Record<string, an
 }
 
 export async function search_artist(reply: FastifyReply, query: Record<string, any>) {
-  const result = await search({ keywords: query.key, offset: query.offset, limit: 30, type: 100, randomCNIP: true })
+  const result = await search({ keywords: query.key, offset: query.offset, limit: 30, type: 100, realIP: "116.25.146.177" })
   const body = result.body as any
   const data: SearchArtist[] = []
   for (const i of body.result.artists) {
