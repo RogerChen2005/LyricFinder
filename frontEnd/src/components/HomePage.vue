@@ -43,7 +43,7 @@ function display_list(item: { id: number }) {
 }
 
 loading.value = true
-store.data!.gets('discover', (data) => {
+store.data!.get('discover', (data) => {
     sections.value = data.sections as any[]
     loading.value = false
 }, (err) => {

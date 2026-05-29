@@ -52,7 +52,7 @@ const sig = ref('')
 const isvip = ref(false)
 
 function user_inf() {
-    store.data!.update('profile', (data) => {
+    store.data!.refresh('profile', (data) => {
         ElNotification({ title: 'Success', message: '刷新成功', type: 'success' })
         refresh(data.profile as Record<string, unknown>)
     }, (err) => {
@@ -72,13 +72,13 @@ function refresh(profile: Record<string, unknown>) {
 }
 
 function exit() {
-    store.data!.remove_all()
+    store.data!.clearAll()
     localStorage.removeItem('cookie')
     isLogin.value = false
     router.push('/login')
 }
 
-store.data!.gets('profile', (data) => {
+store.data!.get('profile', (data) => {
     refresh(data.profile as Record<string, unknown>)
 }, (err) => {
     console.log(err)

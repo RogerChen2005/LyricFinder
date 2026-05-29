@@ -12,7 +12,7 @@ export default async function downloadRoutes(app: FastifyInstance): Promise<void
     return downloadService.lyric_download(data, reply)
   })
 
-  app.post('/api/file', async (request, reply) => {
+  app.post('/api/file', (request, reply) => {
     downloadService.get_file(request.body as { filename: string }, reply)
   })
 }

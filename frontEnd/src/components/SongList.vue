@@ -51,7 +51,7 @@ const loading = ref(false)
 
 function get_songlist() {
     loading.value = true
-    store.data!.update('private_list', (data) => {
+    store.data!.refresh('userPlaylists', (data) => {
         refresh(data.list as ListItem[])
         ElNotification({ title: 'Success', message: '刷新成功', type: 'success' })
         handle_page_change(1)
@@ -76,7 +76,7 @@ function handle_page_change(val: number) {
 }
 
 loading.value = true
-store.data!.gets('private_list', (data) => {
+store.data!.get('userPlaylists', (data) => {
     refresh(data.list as ListItem[])
     handle_page_change(1)
     loading.value = false

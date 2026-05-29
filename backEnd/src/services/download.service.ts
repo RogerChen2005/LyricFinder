@@ -19,7 +19,7 @@ function createFileName(
 ): string {
   if (options.use_origin_name) {
     const safeName = String(query.origin_name).replace(/[/:*]/g, '_')
-    return path.join(TEMP_PATH, safeName + ext)
+    return safeName + ext
   }
   let filename = options.mode
     ? `${query.title} - ${query.artists}`
@@ -27,7 +27,7 @@ function createFileName(
   filename = filename.replace(/\//g, '_')
   filename = filename.replace(/\*/g, '＊')
   filename = filename.replace(/:/g, '：')
-  return path.join(TEMP_PATH, `${filename}.${ext}`)
+  return `${filename}.${ext}`
 }
 
 function comp(t1: string, t2: string): boolean {
@@ -136,10 +136,17 @@ export async function music_download(
 export function get_file(body: { filename: string }, reply: FastifyReply): void {
   const filepath = path.join(TEMP_PATH, body.filename)
   if (fs.existsSync(filepath)) {
+    const stat = fs.statSync(filepath)
+    if (stat.size === 0) {
+      reply.status(404).send('')
+      return
+    }
     const filename = path.basename(body.filename)
+    console.log(stat.size)
     reply.header('Content-Type', 'application/octet-stream')
+    reply.header('Content-Length', stat.size)
     reply.header('Content-Disposition', `attachment; filename="${encodeURIComponent(filename)}"`)
-    const readStream = fs.createReadStream(filepath)
+    let readStream = fs.createReadStream(filepath)
     readStream.on('close', () => {
       fs.rmSync(filepath)
     })

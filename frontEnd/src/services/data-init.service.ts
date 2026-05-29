@@ -1,13 +1,13 @@
 import axios from '@/utils/request'
 
-type Callback = (data: Record<string, unknown>) => void
-type ErrCallback = (reason: unknown) => void
+type Callback = (data: Record<string, any>) => void
+type ErrCallback = (reason: any) => void
 
-interface ProcMap {
-  [key: string]: (this: _data, callback: Callback, err?: ErrCallback) => void
+interface FetcherMap {
+  [key: string]: (this: DataService, callback: Callback, err?: ErrCallback) => void
 }
 
-const proc: ProcMap = {
+const fetchers: FetcherMap = {
   discover(callback, err) {
     axios.post('/api/discover', {
       cookie: localStorage.getItem('cookie')
@@ -28,8 +28,8 @@ const proc: ProcMap = {
       if (typeof err === 'function') err(reason)
     })
   },
-  private_list(callback, err) {
-    this.gets('profile', (data) => {
+  userPlaylists(callback, err) {
+    this.get('profile', (data) => {
       axios.post('/api/playlist', {
         uid: (data.profile as Record<string, unknown>).userid,
         cookie: localStorage.getItem('cookie')
@@ -44,13 +44,13 @@ const proc: ProcMap = {
   }
 }
 
-export class _data {
+export class DataService {
   [key: string]: unknown
 
-  gets(key: string, callback?: Callback, err?: ErrCallback): void {
+  get(key: string, callback?: Callback, err?: ErrCallback): void {
     if (!this[key]) {
-      if (typeof proc[key] === 'function') {
-        proc[key].call(this, (data) => {
+      if (typeof fetchers[key] === 'function') {
+        fetchers[key].call(this, (data) => {
           this[key] = data
           if (typeof callback === 'function') callback(data)
         }, err)
@@ -60,21 +60,21 @@ export class _data {
     }
   }
 
-  update(key: string, callback?: Callback, err?: ErrCallback): void {
-    if (typeof proc[key] === 'function') {
-      proc[key].call(this, (data) => {
+  refresh(key: string, callback?: Callback, err?: ErrCallback): void {
+    if (typeof fetchers[key] === 'function') {
+      fetchers[key].call(this, (data) => {
         this[key] = data
         if (typeof callback === 'function') callback(data)
       }, err)
     }
   }
 
-  remove(key: string): void {
+  clear(key: string): void {
     if (this[key]) delete this[key]
   }
 
-  remove_all(): void {
-    for (const key in proc) {
+  clearAll(): void {
+    for (const key in fetchers) {
       if (this[key]) delete this[key]
     }
   }
