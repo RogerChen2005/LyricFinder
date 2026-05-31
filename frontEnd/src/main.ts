@@ -8,12 +8,22 @@ import router from './router'
 import App from './App.vue'
 import { syncSystemTheme } from './services/theme.service.ts'
 
+declare const __loader: { set(pct: number): void; done(): void }
+
 const app = createApp(App)
+__loader.set(20)
 
 app.use(createPinia())
 app.use(router)
+__loader.set(50)
+
 app.use(ElementPlus)
+__loader.set(80)
 
 syncSystemTheme()
 
-app.mount('#app')
+try {
+  app.mount('#app')
+} finally {
+  __loader.done()
+}
