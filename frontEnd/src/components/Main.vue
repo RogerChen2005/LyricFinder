@@ -28,6 +28,7 @@
     </div>
   </div>
   <MusicPlayer ref="player" />
+  <ChangelogDialog />
 </template>
 
 <script setup lang="ts">
@@ -35,6 +36,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '@/stores'
 import MusicPlayer from './MusicPlayer.vue'
+import ChangelogDialog from './ChangelogDialog.vue'
 import icon from '@/assets/icon.png'
 
 const navItems = [

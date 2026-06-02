@@ -111,7 +111,7 @@ function update() {
 }
 
 function opentool(name: string) {
-  window.open(`/#/tools/${name}`, '_blank', 'width=1000,height=900,left=200,popup=yes')
+  window.open(`./#/tools/${name}`, '_blank', 'width=1000,height=900,left=200,popup=yes')
 }
 
 const saved = localStorage.getItem('settings')
