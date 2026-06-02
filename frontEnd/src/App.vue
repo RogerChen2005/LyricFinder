@@ -71,7 +71,7 @@ if (!cookie) {
 body {
     background-color: var(--bg-color);
     color: var(--text-color);
-    --el-bg-color: transparent;
+    /* --el-bg-color: transparent; */
     --el-fill-color-blank: transparent;
     --el-mask-color: rgba(250, 250, 252, 0.72);
     --el-border-color: var(--bd-color);

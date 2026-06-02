@@ -36,7 +36,11 @@ jobs:
           cp -r backEnd/dist/* dist/
           cp -r frontEnd/static/* dist/static/
           cp backEnd/package.json dist/
-          cp backEnd/pnpm-lock.yaml dist/
+          cp backEnd/package-lock.json dist/
+
+      - name: Install production dependencies
+        working-directory: dist
+        run: npm ci --omit=dev --no-audit --no-fund
 
       - uses: actions/upload-artifact@v4
         with:
@@ -73,19 +77,22 @@ jobs:
           remote_port: ${{ secrets.SSH_PORT || 22 }}
           remote_key: ${{ secrets.SSH_KEY }}
 
-      - name: Restart app on server
+      - name: Upload node_modules
+        uses: burnett01/rsync-deployments@7.0.1
+        with:
+          switches: -avzr --delete
+          path: dist/node_modules/
+          remote_path: ${{ secrets.DEPLOY_PATH }}/node_modules/
+          remote_host: ${{ secrets.SSH_HOST }}
+          remote_user: ${{ secrets.SSH_USER }}
+          remote_port: ${{ secrets.SSH_PORT || 22 }}
+          remote_key: ${{ secrets.SSH_KEY }}
+
+      - name: Restart service
         uses: appleboy/ssh-action@v1.2.5
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT || 22 }}
-          script: |
-            cd ${{ secrets.DEPLOY_PATH }}
-            export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            
-            nvm install 24
-            nvm use 24
-            npm install --omit=dev --prefer-offline
-            sudo systemctl restart lyricfinder
+          script: sudo systemctl restart lyricfinder

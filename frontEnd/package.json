@@ -13,6 +13,7 @@
     "boxicons": "^2.1.4",
     "element-plus": "^2.9.0",
     "marked": "^11.1.1",
+    "music-metadata": "^11.12.3",
     "pinia": "^2.3.0",
     "vue": "^3.5.0",
     "vue-router": "^4.5.0"
