@@ -134,7 +134,7 @@ async function selectFolder() {
     scanning.value = true
 
     const entries: [string, FileSystemFileHandle][] = []
-    for await (const [name, handle] of dirHandle!.entries()) {
+    for await (const [name, handle] of (dirHandle as any).entries()) {
         if (handle.kind === 'file') {
             const ext = '.' + name.split('.').pop()!.toLowerCase()
             if (AUDIO_EXTS.has(ext)) {
@@ -142,7 +142,6 @@ async function selectFolder() {
             }
         }
     }
-    console.log(entries)
 
     for (const [name, handle] of entries) {
         try {
